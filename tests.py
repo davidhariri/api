@@ -12,6 +12,7 @@ def evaluate(description, assertion, log=None):
 
 base_url = "{}:{}/".format(settings["server"]["url"], settings["server"]["port"])
 auth_user = (settings["authentication"]["email"], settings["authentication"]["pass"])
+
 # Check authorization
 unauth_req = requests.get(base_url)
 evaluate(
@@ -30,3 +31,31 @@ evaluate(
     "Request with authentication",
     auth_req.status_code == 200 and auth_req.json()["authenticated"] == True
 )
+
+# Check articles endpoints
+auth_articles_req = requests.get(base_url+"articles/", auth=auth_user)
+evaluate(
+    "All articles with authentication",
+    auth_articles_req.status_code == 200
+)
+print auth_articles_req.json()
+
+articles_req = requests.get(base_url+"articles/")
+evaluate(
+    "All articles with no authentication",
+    articles_req.status_code == 200
+)
+print articles_req.json()
+
+create_article_req = requests.post(base_url+"articles/")
+evaluate(
+    "Creating article with no authentication",
+    create_article_req.status_code == 401
+)
+
+auth_create_article_req = requests.post(base_url+"articles/", auth=auth_user)
+evaluate(
+    "Creating article with authentication",
+    auth_create_article_req.status_code == 201
+)
+print auth_create_article_req.json()
