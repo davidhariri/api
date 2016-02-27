@@ -42,9 +42,9 @@ def find(key=None, tag=None, only_published=True):
     # Find by id (favoured over tag)
     if key != None:
         if only_published:
-            return parse_articles(database.articles.find({"key" : id, "published" : True}).limit(1))
+            return parse_articles(database.articles.find({"key" : key, "published" : True}).limit(1))
         else:
-            return parse_articles(database.articles.find({"key" : id}).limit(1))
+            return parse_articles(database.articles.find({"key" : key}).limit(1))
 
     # Find by tag
     if tag != None:

@@ -59,3 +59,5 @@ evaluate(
     auth_create_article_req.status_code == 201
 )
 print auth_create_article_req.json()
+
+# TODO: Check article endpoints

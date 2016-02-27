@@ -45,7 +45,40 @@ def return_articles(authenticated):
 			)), 201
 		else:
 			return json.dumps({
-				"message" : "Sorry, but this method is only allowed for administrators."
+				"message" : "This method is only allowed for administrators."
+			}), 401
+
+@app.route("/articles/<url>", methods=["GET", "PUT", "DELETE"])
+@authenticate
+def return_article(url, authenticated):
+	if request.method == "GET":
+		results = []
+
+		if authenticated:
+			results = Articles.find(key=url, only_published=False)
+		else:
+			results = Articles.find(key=url)
+
+		if len(results) > 0:
+			return json.dumps(results[0]), 200
+		else:
+			return json.dumps({"message" : "Article not found."}), 404
+
+	elif request.method == "PUT":
+		if authenticated:
+			Articles.replace(request.json)
+			return json.dumps({"message" : "Replaced article"}), 200
+		else:
+			return json.dumps({
+				"message" : "This method is only allowed for administrators."
+			}), 401
+
+	elif request.method == "DELETE":
+		if authenticated:
+			return json.dumps(Articles.delete(url)), 200
+		else:
+			return json.dumps({
+				"message" : "This method is only allowed for administrators."
 			}), 401
 
 if __name__ == "__main__":
