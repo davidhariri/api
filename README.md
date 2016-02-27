@@ -14,6 +14,10 @@ settings = {
         "user" : "", # a username
         "pass" : "", # a password
     },
+    "authentication" : {
+        "email" : "", # expects a string to be used in your auth headers before the colon
+        "pass" : "" # expects a string to be used in your auth headers after the colon
+    },
     "debug" : True,
     "port" : 8000
 }
