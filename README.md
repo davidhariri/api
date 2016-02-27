@@ -67,8 +67,3 @@ Method | Auth? | Description | Response
 --- | --- | --- | ---
 **GET** | Optional | Will only return a published article unless authorized. | `200, {...}`
 **PUT** | Needed | Replaces an article. For obvious reasons, authentication is required. | `200, {...}`
-
-### /articles/shared/{oid}
-Method | Auth? | Description | Response
---- | --- | --- | ---
-**GET** | Optional | Will return an article, published or unpublished without authorization | `200, {...}`
