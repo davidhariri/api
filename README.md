@@ -19,6 +19,9 @@ settings = {
 }
 ```
 
+## Tests
+To keep things sane, I've made a simple file where all tests of endpoints are made. If you'd like to contribute to this repository, don't forget to test your work before opening a pull request :relaxed:
+
 ## Authorization
 To keep things simple, all authorization happens with a username and password over SSL as a Basic Authentication header. Insecure requests to the API will be ignored.
 ```
