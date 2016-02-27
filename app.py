@@ -2,9 +2,11 @@ from flask import Flask, request
 from controllers import articles as Articles
 from config import settings
 from decorators import authenticate
+from flask.ext.cors import CORS
 import json
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route("/")
 @authenticate
