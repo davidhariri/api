@@ -81,5 +81,23 @@ def return_article(url, authenticated):
 				"message" : "This method is only allowed for administrators."
 			}), 401
 
+@app.errorhandler(404)
+def return_404(e):
+	return json.dumps({
+		"message" : "That resource doesn't exist"
+	}), 404
+
+@app.errorhandler(405)
+def return_405(e):
+	return json.dumps({
+		"message" : "That method is not allowed"
+	}), 405
+
+@app.errorhandler(500)
+def return_500(e):
+	return json.dumps({
+		"message" : "Internal server error. Please report issues here: https://github.com/davidhariri/api/issues"
+	}), 500
+
 if __name__ == "__main__":
 	app.run(debug=settings["server"]["debug"], port=settings["server"]["port"])
