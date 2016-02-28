@@ -67,9 +67,9 @@ def return_article(url, authenticated):
 			return json.dumps({"message" : "Article not found."}), 404
 
 	elif request.method == "PUT":
+		# FIXME: This endpoint expects the url key to actually be the id :-S
 		if authenticated:
-			Articles.replace(request.json)
-			return json.dumps({"message" : "Replaced article"}), 200
+			return json.dumps(Articles.replace(json.loads(request.data))), 200
 		else:
 			return json.dumps({
 				"message" : "This method is only allowed for administrators."
@@ -100,6 +100,12 @@ def return_500(e):
 	return json.dumps({
 		"message" : "Internal server error. Please report issues here: https://github.com/davidhariri/api/issues"
 	}), 500
+
+@app.errorhandler(400)
+def return_500(e):
+	return json.dumps({
+		"message" : "Bad request."
+	}), 400
 
 if __name__ == "__main__":
 	app.run(debug=settings["server"]["debug"], port=settings["server"]["port"])

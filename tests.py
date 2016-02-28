@@ -38,14 +38,12 @@ evaluate(
     "All articles with authentication",
     auth_articles_req.status_code == 200
 )
-print auth_articles_req.json()
 
 articles_req = requests.get(base_url+"articles/")
 evaluate(
     "All articles with no authentication",
     articles_req.status_code == 200
 )
-print articles_req.json()
 
 create_article_req = requests.post(base_url+"articles/")
 evaluate(
@@ -58,6 +56,23 @@ evaluate(
     "Creating article with authentication",
     auth_create_article_req.status_code == 201
 )
-print auth_create_article_req.json()
 
-# TODO: Check article endpoints
+new_article = auth_create_article_req.json()
+
+# Check article endpoints
+# Edit the new_article
+new_article["content"]["markdown"] = "# A test\n\nHello World"
+new_article_edit_req = requests.put(base_url+"articles/"+new_article["id"], json=new_article)
+evaluate(
+    "Editing an article without authentication",
+    new_article_edit_req.status_code == 401
+)
+
+new_article["content"]["markdown"] = "# A test\n\nHello World"
+new_article_edit_req_auth = requests.put(base_url+"articles/"+new_article["id"], auth=auth_user, json=new_article)
+evaluate(
+    "Editing an article with authentication",
+    new_article_edit_req_auth.status_code == 200
+)
+
+print new_article_edit_req_auth.json()

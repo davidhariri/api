@@ -77,6 +77,7 @@ def new(key="", title="", content="", tags=None):
     return Article(article)
 
 def replace(article):
+    parsed_content = parse_content(article["content"]["markdown"])
     database.articles.update(
         {
             "_id" : ObjectId(article["id"])
@@ -86,7 +87,7 @@ def replace(article):
                 "title" : article["title"],
                 "key" : article["key"],
                 "update" : datetime.datetime.utcnow(),
-                "content" : parse_content(article["content"]["markdown"]),
+                "content" : parsed_content,
                 "published" : article["published"],
                 "tags" : article["tags"]
             }
@@ -94,6 +95,7 @@ def replace(article):
         False
     )
 
+    article["content"] = parsed_content
     return article
 
 def delete(id):
