@@ -60,7 +60,7 @@ Method | Auth? | Description | Response
 Method | Auth? | Description | Response
 --- | --- | --- | ---
 **GET** | Optional | Retrieve all the published articles I've made. If authorized, this will return unpublished articles as well. | `200, [{...}]`
-**POST** | Needed | Makes a new article. Accepts parameters, but none are required. | `201, [{...}]`
+**POST** | Needed | Makes a new article. No parameters | `201, [{...}]`
 
 ### /articles/{url_key}
 Method | Auth? | Description | Response

@@ -62,17 +62,29 @@ new_article = auth_create_article_req.json()
 # Check article endpoints
 # Edit the new_article
 new_article["content"]["markdown"] = "# A test\n\nHello World"
-new_article_edit_req = requests.put(base_url+"articles/"+new_article["id"], json=new_article)
+new_article_edit_req = requests.put(base_url+"articles/"+new_article["_id"]["$oid"], json=new_article)
 evaluate(
     "Editing an article without authentication",
     new_article_edit_req.status_code == 401
 )
 
 new_article["content"]["markdown"] = "# A test\n\nHello World"
-new_article_edit_req_auth = requests.put(base_url+"articles/"+new_article["id"], auth=auth_user, json=new_article)
+new_article_edit_req_auth = requests.put(base_url+"articles/"+new_article["_id"]["$oid"], auth=auth_user, json=new_article)
 evaluate(
     "Editing an article with authentication",
     new_article_edit_req_auth.status_code == 200
 )
 
 print new_article_edit_req_auth.json()
+
+new_article_delete_req = requests.delete(base_url+"articles/"+new_article["_id"]["$oid"], auth=auth_user)
+evaluate(
+    "Deleting an article without authentication",
+    new_article_edit_req.status_code == 401
+)
+
+new_article_delete_req_auth = requests.delete(base_url+"articles/"+new_article["_id"]["$oid"], auth=auth_user)
+evaluate(
+    "Deleting an article with authentication",
+    new_article_edit_req_auth.status_code == 200
+)

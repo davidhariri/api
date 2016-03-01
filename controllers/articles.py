@@ -1,58 +1,60 @@
 import pymongo
 from bson.json_util import dumps
 from bson.objectid import ObjectId
-import json
 from datetime import datetime
 from config import settings
 from markdown import markdown as HTML_from_markdown
+import json
 
 database = pymongo.MongoClient('mongodb://{}:{}{}'.format(settings["database"]["user"], settings["database"]["pass"], settings["database"]["url"]))["blog"]
 
 class Article(object):
-    def __init__(self, _id=ObjectId(), key=None, title="", text="", made=datetime.now(), updated=datetime.now(), tags=[], published=False, content=None):
-        if content == None:
+    def __init__(self, _id=ObjectId(), key=None, title="", made=datetime.now(), updated=datetime.now(), tags=[], published=False, content=None):
+        # Content checker
+        if isinstance(content, dict) is False:
             self.content = {
                 "html" : "",
-                "markdown" : text
+                "markdown" : ""
             }
         else:
             self.content = content
 
+        # Id checker
         if isinstance(_id, ObjectId):
             self._id = _id
         elif isinstance(_id, basestring):
             self._id = ObjectId(_id)
+        elif isinstance(_id, dict):
+            self._id = ObjectId(_id["$oid"])
         else:
             self._id = ObjectId()
 
+        # Date checker
+        if isinstance(updated, dict):
+            self.updated = datetime.fromtimestamp(updated["$date"] / 1000)
+        else:
+            self.updated = updated
+
+        if isinstance(made, dict):
+            self.made = datetime.fromtimestamp(made["$date"] / 1000)
+        else:
+            self.made = made
+
         self.key = key
         self.title = title
+        self.tags = tags
+        self.published = published
 
-    def set_text(self, new_text):
-        self.content["markdown"] = new_text
-        self.content["html"] = HTML_from_markdown(new_text)
+    def render_html(self):
+        self.content["html"] = HTML_from_markdown(self.content["markdown"])
         self.updated = datetime.now()
-
-    def set_title(self, new_title):
-        self.title = new_title
-        self.updated = datetime.now()
-
-    def set_key(self, new_key):
-        self.key = new_key
-        self.updated = datetime.now()
-
-    def set_published(self, new_published):
-        self.published = new_published
-        self.updated = datetime.now()
-
-    def get_json(self):
-        return dumps(self)
 
 def find(_id=None, key=None, only_published=True):
     # Find an article in various ways and return a list of Article's
     # Favoring _id > key
-
+    # If no search query parameters specified then will just return latest articles
     # Append a published flag if specified
+
     def get_published_flag():
         if only_published:
             return {"published" : True}.items()
@@ -74,8 +76,8 @@ def find(_id=None, key=None, only_published=True):
 
         return results
 
-    if isinstance(_id, ObjectId):
-        search = dict({"_id" : _id}.items() + get_published_flag())
+    if isinstance(_id, basestring):
+        search = dict({"_id" : ObjectId(_id)}.items() + get_published_flag())
         return get_search_results_from_search(search)
 
     elif isinstance(key, basestring):
@@ -83,7 +85,8 @@ def find(_id=None, key=None, only_published=True):
         return get_search_results_from_search(search)
 
     else:
-        print "Cannot find article. No searchable attribute passed"
+        search = dict(get_published_flag())
+        return get_search_results_from_search(search)
 
     return None
 
@@ -102,17 +105,13 @@ def save(article):
 
     return False
 
-def delete(article):
-    if isinstance(article, Article):
-        try:
-            database.articles.delete_one({"_id" : article._id})
-            return article
+def delete(_id):
+    try:
+        database.articles.delete_one({"_id" : article._id})
+        return True
 
-        except Exception as e:
-            print "Could not delete Article. Database Error:"
-            print e
-
-    else:
-        print "Could not delete Article. Object not of type Article"
+    except Exception as e:
+        print "Could not delete Article. Database Error:"
+        print e
 
     return False
