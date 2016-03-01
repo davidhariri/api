@@ -9,7 +9,7 @@ import json
 database = pymongo.MongoClient('mongodb://{}:{}{}'.format(settings["database"]["user"], settings["database"]["pass"], settings["database"]["url"]))["blog"]
 
 class Article(object):
-    def __init__(self, _id=ObjectId(), key=None, title="", made=datetime.now(), updated=datetime.now(), tags=[], published=False, content=None):
+    def __init__(self, _id=ObjectId(), key="", title="", made=datetime.now(), updated=datetime.now(), tags=[], published=False, content=None):
         # Content checker
         if isinstance(content, dict) is False:
             self.content = {
@@ -65,7 +65,7 @@ def find(_id=None, key=None, only_published=True):
         results = []
 
         try:
-            db_results = database.articles.find(search)
+            db_results = database.articles.find(search).sort("_id", -1)
 
             for result in db_results:
                 results.append(Article(**result))
@@ -90,7 +90,13 @@ def find(_id=None, key=None, only_published=True):
 
     return None
 
+def new():
+    new_article = {}
+    database.articles.insert_one(new_article)
+    return Article(**new_article)
+
 def save(article):
+    print article._id
     if isinstance(article, Article):
         try:
             database.articles.update({"_id" : article._id}, {"$set" : article.__dict__}, True)
@@ -107,7 +113,7 @@ def save(article):
 
 def delete(_id):
     try:
-        database.articles.delete_one({"_id" : article._id})
+        database.articles.delete_one({"_id" : ObjectId(_id)})
         return True
 
     except Exception as e:

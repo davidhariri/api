@@ -42,9 +42,7 @@ def return_articles(authenticated):
 
 	elif request.method == "POST":
 		if authenticated:
-			new_article = Articles.Article()
-			Articles.save(new_article)
-			return dumps(new_article.__dict__), 201
+			return dumps(Articles.new().__dict__), 201
 		else:
 			return dumps({
 				"message" : "This method is only allowed for administrators."
@@ -84,7 +82,7 @@ def return_article(_id, authenticated):
 
 	elif request.method == "DELETE":
 		if authenticated:
-			Articles.delete(_id)
+			print Articles.delete(_id)
 			return dumps({
 				"message" : "Deleted {}".format(_id)
 			}), 200
