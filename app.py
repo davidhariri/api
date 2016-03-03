@@ -35,7 +35,7 @@ def return_articles(authenticated):
 		# Will return all articles
 		results = []
 
-		for article in Articles.find(only_published=(not authenticated)):
+		for article in Articles.find(authenticated=authenticated):
 			results.append(article.__dict__)
 
 		return dumps(results), 200
@@ -54,7 +54,7 @@ def return_article(_id, authenticated):
 	if request.method == "GET":
 		results = []
 
-		for article in Articles.find(_id=_id, only_published=(not authenticated)):
+		for article in Articles.find(_id=_id, authenticated=authenticated):
 			results.append(article.__dict__)
 
 		if len(results) > 0:

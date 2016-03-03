@@ -49,17 +49,11 @@ class Article(object):
         self.content["html"] = HTML_from_markdown(self.content["markdown"])
         self.updated = datetime.now()
 
-def find(_id=None, only_published=True):
+def find(_id=None, authenticated=False):
     # Find an article in various ways and return a list of Article's
 
     # If no search query parameters specified then will just return latest articles
     # Append a published flag if specified
-
-    def get_published_flag():
-        if only_published:
-            return {"published" : True}.items()
-
-        return {}.items()
 
     def get_search_results_from_search(search):
         results = []
@@ -77,11 +71,34 @@ def find(_id=None, only_published=True):
         return results
 
     if isinstance(_id, basestring):
-        search = dict({"_id" : ObjectId(_id)}.items() + get_published_flag())
+        # Accessing an article by it's id
+        search = None
+
+        if authenticated:
+            # We have authentication so return anything that matches the _id
+            search = dict({"_id" : ObjectId(_id)})
+        else:
+            # We don't have authentication so only return things that are shared
+            #  or published (this rule only applies to direct access to links)
+            search = {
+                "$or" : [
+                    {"_id" : ObjectId(_id), "shared" : True},
+                    {"_id" : ObjectId(_id), "published" : True}
+                ]
+            }
+
         return get_search_results_from_search(search)
 
     else:
-        search = dict(get_published_flag())
+        # Trying to get all articles so return only things that are published
+        # for unauthenticated users
+        search = None
+
+        if authenticated:
+            search = {}
+        else:
+            search = {"published" : True}
+
         return get_search_results_from_search(search)
 
     return None
