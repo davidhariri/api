@@ -9,7 +9,7 @@ import json
 database = pymongo.MongoClient('mongodb://{}:{}{}'.format(settings["database"]["user"], settings["database"]["pass"], settings["database"]["url"]))["blog"]
 
 class Article(object):
-    def __init__(self, _id=ObjectId(), key="", title="", made=datetime.now(), updated=datetime.now(), tags=[], published=False, content=None):
+    def __init__(self, _id=ObjectId(), title="", made=datetime.now(), updated=datetime.now(), tags=[], published=False, content=None, **kwargs):
         # Content checker
         if isinstance(content, dict) is False:
             self.content = {
@@ -40,7 +40,6 @@ class Article(object):
         else:
             self.made = made
 
-        self.key = key
         self.title = title
         self.tags = tags
         self.published = published
@@ -49,9 +48,9 @@ class Article(object):
         self.content["html"] = HTML_from_markdown(self.content["markdown"])
         self.updated = datetime.now()
 
-def find(_id=None, key=None, only_published=True):
+def find(_id=None, only_published=True):
     # Find an article in various ways and return a list of Article's
-    # Favoring _id > key
+
     # If no search query parameters specified then will just return latest articles
     # Append a published flag if specified
 
@@ -78,10 +77,6 @@ def find(_id=None, key=None, only_published=True):
 
     if isinstance(_id, basestring):
         search = dict({"_id" : ObjectId(_id)}.items() + get_published_flag())
-        return get_search_results_from_search(search)
-
-    elif isinstance(key, basestring):
-        search = dict({"key" : key}.items() + get_published_flag())
         return get_search_results_from_search(search)
 
     else:
