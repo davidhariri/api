@@ -99,7 +99,7 @@ test_locations = [{
     "lon" : -79.35
 }]
 
-new_location_ping_req = requests.post(base_url+"ping/", json=test_locations)
+new_location_ping_req = requests.post(base_url+"ping/", json=test_locations, auth=auth_user)
 evaluate(
     "Posting location data",
     new_location_ping_req.status_code == 201
