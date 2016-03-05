@@ -99,8 +99,8 @@ def accept_ping(authenticated):
 	data = loads(request.data)
 
 	if authenticated:
-		if isinstance(data, list):
-			for location_object in data:
+		if "locations" in data and isinstance(data["locations"], list):
+			for location_object in data["locations"]:
 				ping = Pings.Ping(**location_object)
 				ping.save()
 
