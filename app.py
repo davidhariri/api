@@ -1,10 +1,12 @@
 from flask import Flask, request
-from controllers import articles as Articles
 from config import settings
 from decorators import authenticate
 from flask.ext.cors import CORS
 from json import loads
 from bson.json_util import dumps
+
+from controllers import articles as Articles
+from controllers import pings as Pings
 
 app = Flask(__name__)
 CORS(app)
@@ -90,6 +92,23 @@ def return_article(_id, authenticated):
 			return dumps({
 				"message" : "This method is only allowed for administrators."
 			}), 401
+
+@app.route("/ping/", methods=["POST"])
+def accept_ping():
+	data = loads(request.data)
+
+	if isinstance(data, list):
+		for location_object in data:
+			ping = Pings.Ping(**location_object)
+			ping.save()
+
+		return dumps({
+			"message" : "Got it"
+		}), 201
+
+	return dumps({
+		"message" : "No good"
+	}), 400
 
 @app.errorhandler(404)
 def return_404(e):

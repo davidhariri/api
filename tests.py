@@ -88,3 +88,19 @@ evaluate(
     "Deleting an article with authentication",
     new_article_edit_req_auth.status_code == 200
 )
+
+test_locations = [{
+    "time" : "2016-03-05 14:27:34 +0000",
+    "lat" : 43.667,
+    "lon" : -79.34
+}, {
+    "time" : "2016-03-05 14:28:34 +0000",
+    "lat" : 43.668,
+    "lon" : -79.35
+}]
+
+new_location_ping_req = requests.post(base_url+"ping/", json=test_locations)
+evaluate(
+    "Posting location data",
+    new_location_ping_req.status_code == 201
+)
