@@ -94,21 +94,27 @@ def return_article(_id, authenticated):
 			}), 401
 
 @app.route("/ping/", methods=["POST"])
-def accept_ping():
+@authenticate
+def accept_ping(authenticated):
 	data = loads(request.data)
 
-	if isinstance(data, list):
-		for location_object in data:
-			ping = Pings.Ping(**location_object)
-			ping.save()
+	if authenticated:
+		if isinstance(data, list):
+			for location_object in data:
+				ping = Pings.Ping(**location_object)
+				ping.save()
 
+			return dumps({
+				"message" : "Got it"
+			}), 201
+		else:
+			return dumps({
+				"message" : "No good"
+			}), 400
+	else:
 		return dumps({
-			"message" : "Got it"
-		}), 201
-
-	return dumps({
-		"message" : "No good"
-	}), 400
+			"message" : "This method is only allowed for administrators."
+		}), 401
 
 @app.errorhandler(404)
 def return_404(e):
