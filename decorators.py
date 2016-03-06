@@ -5,6 +5,8 @@ from flask import request
 # Read in the admin of the API from the settings file
 auth_user = settings["authentication"]
 
+# TODO: Default to returning 401 if not passed?
+
 def authenticate(f):
     @wraps(f)
     def wrapper(*args, **kwargs):

@@ -109,6 +109,8 @@ evaluate(
 
 get_recent_locations = requests.get(base_url+"ping/recent/")
 evaluate(
-    "Posting location data",
+    "Getting location data",
     get_recent_locations.status_code == 200
 )
+
+# TODO: Write proper test of image sender

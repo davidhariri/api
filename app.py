@@ -4,6 +4,7 @@ from decorators import authenticate
 from flask.ext.cors import CORS
 from json import loads
 from bson.json_util import dumps
+import uuid
 
 from controllers import articles as Articles
 from controllers import pings as Pings
@@ -92,6 +93,27 @@ def return_article(_id, authenticated):
 			return dumps({
 				"message" : "This method is only allowed for administrators."
 			}), 401
+
+@app.route("/images/", methods=["POST"])
+@authenticate
+def upload_return_url(authenticated):
+	if authenticated:
+		upload_data = loads(request.data)
+		image_data = upload_data["stream"].split(",")
+		file_data = image_data[1].decode("base64")
+		file_extension = upload_data["name"].split(".")[-1]
+		file_name = "{}.{}".format(uuid.uuid4(), file_extension)
+
+		with open("images/{}".format(file_name), "w") as fp:
+			fp.write(file_data)
+
+		return dumps({
+			"url" : "https://images.dhariri.com/{}".format(file_name)
+		}), 201
+	else:
+		return dumps({
+			"message" : "This method is only allowed for administrators."
+		}), 401
 
 @app.route("/ping/", methods=["POST"])
 @authenticate
