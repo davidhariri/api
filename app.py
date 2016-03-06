@@ -116,6 +116,17 @@ def accept_ping(authenticated):
 			"message" : "This method is only allowed for administrators."
 		}), 401
 
+@app.route("/ping/recent/", methods=["GET"])
+def return_recent_locations():
+	# Return all the pings visited recently
+	results = []
+
+	for ping in Pings.find():
+		results.append(ping.__dict__)
+
+	return dumps(results), 200
+
+# Error handlers:
 @app.errorhandler(404)
 def return_404(e):
 	return dumps({

@@ -19,10 +19,13 @@ class Ping(object):
         else:
             self.time = time
 
-        self.location = {
-            "x" : lon,
-            "y" : lat
-        }
+        if "location" in kwargs:
+            self.location = kwargs["location"]
+        else:
+            self.location = {
+                "x" : lon,
+                "y" : lat
+            }
 
     def save(self):
         try:
@@ -30,3 +33,18 @@ class Ping(object):
         except Exception as e:
             print "Ping: Failed to insert new ping:"
             print e
+
+def find():
+    results = []
+
+    try:
+        db_results = database.pings.find().sort("time", -1).limit(30)
+
+        for result in db_results:
+            results.append(Ping(**result))
+
+    except Exception as e:
+        print "Could not make search:"
+        print e
+
+    return results
