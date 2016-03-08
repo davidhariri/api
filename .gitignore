@@ -1,3 +1,5 @@
 config.py
 *.pyc
 images/**
+wsgi.py
+wsgi.ini
