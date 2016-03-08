@@ -29,7 +29,7 @@ class Ping(object):
 
     def save(self):
         try:
-            database.pings.insert_one(self.__dict__)
+            database.pings.insert(self.__dict__)
         except Exception as e:
             print "Ping: Failed to insert new ping:"
             print e

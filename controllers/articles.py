@@ -105,7 +105,7 @@ def find(_id=None, authenticated=False):
 
 def new():
     new_article = {}
-    database.articles.insert_one(new_article)
+    database.articles.insert(new_article)
     return Article(**new_article)
 
 def save(article):
