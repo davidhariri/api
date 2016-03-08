@@ -46,7 +46,7 @@ class Article(object):
         self.shared = shared
 
     def render_html(self):
-        self.content["html"] = HTML_from_markdown(self.content["markdown"])
+        self.content["html"] = HTML_from_markdown(self.content["markdown"], extensions=["fenced_code"])
         self.updated = datetime.now()
 
 def find(_id=None, authenticated=False):
