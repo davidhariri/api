@@ -9,7 +9,7 @@ import json
 database = pymongo.MongoClient('mongodb://{}:{}{}'.format(settings["database"]["user"], settings["database"]["pass"], settings["database"]["url"]))["blog"]
 
 class Ping(object):
-    def __init__(self, logged=datetime.now(), time=None, lat=None, lon=None, **kwargs):
+    def __init__(self, logged=datetime.now(), time=None, lat=None, lon=None, speed=None, alt=None, **kwargs):
         self.logged = logged
 
         if isinstance(time, basestring):
@@ -24,7 +24,9 @@ class Ping(object):
         else:
             self.location = {
                 "x" : lon,
-                "y" : lat
+                "y" : lat,
+                "altitude" : alt,
+                "speed" : speed
             }
 
     def save(self):
