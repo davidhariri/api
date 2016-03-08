@@ -126,7 +126,7 @@ def save(article):
 
 def delete(_id):
     try:
-        database.articles.delete_one({"_id" : ObjectId(_id)})
+        database.articles.remove({"_id" : ObjectId(_id)})
         return True
 
     except Exception as e:
