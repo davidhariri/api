@@ -98,18 +98,20 @@ def return_article(_id, authenticated):
 @authenticate
 def upload_return_url(authenticated):
 	if authenticated:
-		upload_data = loads(request.data)
-		image_data = upload_data["stream"].split(",")
-		file_data = image_data[1].decode("base64")
-		file_extension = upload_data["name"].split(".")[-1]
+		file = request.files["file"]
+		file_extension = file.filename.split(".")[-1]
 		file_name = "{}.{}".format(uuid.uuid4(), file_extension)
 
-		with open("images/{}".format(file_name), "w") as fp:
-			fp.write(file_data)
+		if file_extension in set(["png", "jpg", "jpeg", "gif", "svg"]):
+			file.save("images/{}".format(file_name))
 
-		return dumps({
-			"url" : "https://images.dhariri.com/{}".format(file_name)
-		}), 201
+			return dumps({
+				"url" : "https://images.dhariri.com/{}".format(file_name)
+			}), 201
+		else:
+			return dumps({
+				"message" : "No good"
+			}), 400
 	else:
 		return dumps({
 			"message" : "This method is only allowed for administrators."

@@ -105,7 +105,7 @@ def find(_id=None, authenticated=False):
 
 def new():
     new_article = {}
-    database.articles.insert_one(new_article)
+    database.articles.insert(new_article)
     return Article(**new_article)
 
 def save(article):
@@ -126,7 +126,7 @@ def save(article):
 
 def delete(_id):
     try:
-        database.articles.delete_one({"_id" : ObjectId(_id)})
+        database.articles.remove({"_id" : ObjectId(_id)})
         return True
 
     except Exception as e:
