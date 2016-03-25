@@ -45,7 +45,9 @@ def return_articles(authenticated):
 
 	elif request.method == "POST":
 		if authenticated:
-			return dumps(Articles.new().__dict__), 201
+			new_article = Articles.new()
+			print new_article.made
+			return dumps(new_article.__dict__), 201
 		else:
 			return dumps({
 				"message" : "This method is only allowed for administrators."

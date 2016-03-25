@@ -9,7 +9,7 @@ import json
 database = pymongo.MongoClient('mongodb://{}:{}{}'.format(settings["database"]["user"], settings["database"]["pass"], settings["database"]["url"]))["blog"]
 
 class Article(object):
-    def __init__(self, _id=ObjectId(), title="", made=datetime.now(), updated=datetime.now(), tags=[], published=False, shared=False, content=None, **kwargs):
+    def __init__(self, _id=ObjectId(), title="", made=None, updated=None, tags=[], published=False, shared=False, content=None, **kwargs):
         # Content checker
         if isinstance(content, dict) is False:
             self.content = {
@@ -29,16 +29,18 @@ class Article(object):
         else:
             self._id = ObjectId()
 
+        now = datetime.now()
+
         # Date checker
         if isinstance(updated, dict):
             self.updated = datetime.fromtimestamp(updated["$date"] / 1000)
         else:
-            self.updated = updated
+            self.updated = now
 
         if isinstance(made, dict):
             self.made = datetime.fromtimestamp(made["$date"] / 1000)
         else:
-            self.made = made
+            self.made = now
 
         self.title = title
         self.tags = tags
