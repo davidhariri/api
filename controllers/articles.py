@@ -34,11 +34,15 @@ class Article(object):
         # Date checker
         if isinstance(updated, dict):
             self.updated = datetime.fromtimestamp(updated["$date"] / 1000)
+        elif updated is not None:
+            self.updated = updated
         else:
             self.updated = now
 
         if isinstance(made, dict):
             self.made = datetime.fromtimestamp(made["$date"] / 1000)
+        elif made is not None:
+            self.made = made
         else:
             self.made = now
 
