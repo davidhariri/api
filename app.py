@@ -46,7 +46,6 @@ def return_articles(authenticated):
 	elif request.method == "POST":
 		if authenticated:
 			new_article = Articles.new()
-			print new_article.made
 			return dumps(new_article.__dict__), 201
 		else:
 			return dumps({
