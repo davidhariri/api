@@ -45,7 +45,9 @@ def return_articles(authenticated):
 
 	elif request.method == "POST":
 		if authenticated:
-			return dumps(Articles.new().__dict__), 201
+			new_article = Articles.new()
+			print new_article.made
+			return dumps(new_article.__dict__), 201
 		else:
 			return dumps({
 				"message" : "This method is only allowed for administrators."
@@ -85,10 +87,14 @@ def return_article(_id, authenticated):
 
 	elif request.method == "DELETE":
 		if authenticated:
-			print Articles.delete(_id)
-			return dumps({
-				"message" : "Deleted {}".format(_id)
-			}), 200
+			if Articles.delete(_id):
+				return dumps({
+					"message" : "Deleted article {}".format(_id)
+				}), 200
+			else:
+				return dumps({
+					"message" : "Article could not be deleted"
+				}), 400
 		else:
 			return dumps({
 				"message" : "This method is only allowed for administrators."
