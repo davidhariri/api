@@ -9,8 +9,8 @@ import json
 database = pymongo.MongoClient('mongodb://{}:{}{}'.format(settings["database"]["user"], settings["database"]["pass"], settings["database"]["url"]))["blog"]
 
 class Ping(object):
-    def __init__(self, logged=datetime.now(), time=None, lat=None, lon=None, speed=None, alt=None, **kwargs):
-        self.logged = logged
+    def __init__(self, time=None, lat=None, lon=None, speed=None, alt=None, **kwargs):
+        self.logged = datetime.now()
 
         if isinstance(time, basestring):
             # Assume: "2016-03-05 14:27:34 +0000"
