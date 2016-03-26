@@ -9,7 +9,7 @@ import json
 database = pymongo.MongoClient('mongodb://{}:{}{}'.format(settings["database"]["user"], settings["database"]["pass"], settings["database"]["url"]))["blog"]
 
 class Article(object):
-    def __init__(self, _id=ObjectId(), title="", made=None, updated=None, tags=[], published=False, shared=False, content=None, **kwargs):
+    def __init__(self, _id=ObjectId(), title="", made=None, updated=None, tags=[], published=False, shared=False, content=None, read_count=0, **kwargs):
         # Content checker
         if isinstance(content, dict) is False:
             self.content = {
@@ -50,6 +50,7 @@ class Article(object):
         self.tags = tags
         self.published = published
         self.shared = shared
+        self.read_count = read_count
 
     def render_html(self):
         self.content["html"] = HTML_from_markdown(self.content["markdown"], extensions=["fenced_code"])
