@@ -75,7 +75,17 @@ evaluate(
     new_article_edit_req_auth.status_code == 200
 )
 
-print new_article_edit_req_auth.json()
+new_article_read_req = requests.get(base_url+"articles/"+new_article["_id"]["$oid"]+"/read")
+evaluate(
+    "Reading an article",
+    new_article_read_req.status_code == 200
+)
+
+new_article_love_req = requests.get(base_url+"articles/"+new_article["_id"]["$oid"]+"/love")
+evaluate(
+    "Loving an article",
+    new_article_love_req.status_code == 200
+)
 
 new_article_delete_req = requests.delete(base_url+"articles/"+new_article["_id"]["$oid"], auth=auth_user)
 evaluate(

@@ -52,6 +52,30 @@ def return_articles(authenticated):
 				"message" : "This method is only allowed for administrators."
 			}), 401
 
+# These endpoints uses a GET method because it's easier to deal with for the client
+# TODO: This would be a good place to put a rate limiter in the future...
+@app.route("/articles/<_id>/read", methods=["GET", "PUT", "POST"])
+def read_article(_id):
+	if Articles.read(_id):
+		return dumps({
+			"message" : "Read article {}".format(_id)
+		}), 200
+	else:
+		return dumps({
+			"message" : "Article could not be read"
+		}), 400
+
+@app.route("/articles/<_id>/love", methods=["GET", "PUT", "POST"])
+def love_article(_id):
+	if Articles.love(_id):
+		return dumps({
+			"message" : "Loved article {}".format(_id)
+		}), 200
+	else:
+		return dumps({
+			"message" : "Article could not be loved"
+		}), 400
+
 @app.route("/articles/<_id>", methods=["GET", "PUT", "DELETE"])
 @authenticate
 def return_article(_id, authenticated):
