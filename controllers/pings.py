@@ -36,11 +36,11 @@ class Ping(object):
             print "Ping: Failed to insert new ping:"
             print e
 
-def find():
+def find(count=30):
     results = []
 
     try:
-        db_results = database.pings.find().sort("time", -1).limit(30)
+        db_results = database.pings.find().sort("time", -1).limit(count)
 
         for result in db_results:
             results.append(Ping(**result))
