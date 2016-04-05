@@ -9,7 +9,8 @@ from controllers import pings as Pings
 database = pymongo.MongoClient('mongodb://{}:{}{}'.format(settings["database"]["user"], settings["database"]["pass"], settings["database"]["url"]))["blog"]
 
 special_locations = {
-    "43.660,-79.329" : "at work"
+    "43.660,-79.329" : "at work",
+    "43.667,-79.340" : "at home"
 }
 
 class GeneralLocation(object):
