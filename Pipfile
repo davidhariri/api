@@ -3,6 +3,7 @@ verify_ssl = true
 url = "https://pypi.python.org/simple"
 
 [packages]
+mongoengine = "*"
 Flask-RESTful = "*"
 Flask = "*"
-mongoengine = "*"
+nose = "*"
