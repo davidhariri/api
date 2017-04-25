@@ -17,7 +17,19 @@ class Article(Base):
     read_count = IntField(default=0)
 
     def render_html(self):
-        # TODO: Cache the result of this puppy
+        # TODO: Cache the result of this puppy in Redis
         return HTML_from_markdown(
             self.content, extensions=["fenced_code"]
         )
+
+    def increment_count(self, key, factor=1):
+        if key == "love":
+            self.love_count += factor
+        elif key == "read":
+            self.read_count += factor
+
+    def increment_love_count(self, factor=1):
+        self.increment_count("love", factor)
+
+    def increment_read_count(self, factor=1):
+        self.increment_count("read", factor)
