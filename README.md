@@ -10,6 +10,7 @@ thoughts and opinions by me. They usually have lots of spelling
 mistakes, poor grammar and lots of "arm-waiving".
 
 #### Endoints
-| Route | Method | Protected? | Description |
+| Route | Method | Authenticated | Description |
 | --- | --- | --- | --- |
-| */articles/* | `GET` | 🔐 | Lists `published` articles. If auth is valid, will list all articles |
+| **/articles/** | `GET` | 🔑 | Lists all Articles with all fields |
+| **/articles/** | `GET` | None | Lists all `published` Articles with some [fields removed](/routes/articles.py#L50)  |
