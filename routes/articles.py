@@ -24,11 +24,11 @@ class Articles(Resource):
         Endpoint for creating new Articles
         """
         fields = request.get_json() or {}
-        a = Article(**fields)
-        a.generate_slug()
+        article = Article(**fields)
+        article.generate_slug()
 
         try:
-            a.save()
+            article.save()
         except ValidationError as ve:
             return {
                 "message": MSG_INVALID,
@@ -37,4 +37,20 @@ class Articles(Resource):
         except NotUniqueError:
             return {"message": MSG_DUPLICATE}, 400
 
-        return a.to_dict(), 201
+        return article.to_dict(), 201
+
+    def get(self):
+        """
+        Endpoint for listing all Articles
+
+        TODO:
+        * Support authentication to list unpublished articles
+        """
+        articles = Article.objects(published=True)
+        public_ignore = ["published", "shared", "share_handle"]
+
+        return {
+            "articles": list(
+                map(lambda a: a.to_dict(public_ignore), articles)
+            )
+        }
