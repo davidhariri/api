@@ -47,7 +47,7 @@ class Articles(Resource):
         * Support authentication to list unpublished articles
         """
         articles = Article.objects(published=True)
-        public_ignore = ["published", "shared", "share_handle"]
+        public_ignore = ["_id", "published", "shared", "share_handle"]
 
         return {
             "articles": list(
