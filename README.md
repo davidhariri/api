@@ -1,5 +1,5 @@
 # Welcome 👋
-This is the public-facing API for my life. You can use it to consume
+This is the [public-facing API](https://api.dhariri.com/) for my life. You can use it to consume
 information about me or you can browse the code to see how I like to
 build things.
 
