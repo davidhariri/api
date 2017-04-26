@@ -41,10 +41,7 @@ class Articles(Resource):
 
     def get(self):
         """
-        Endpoint for listing all Articles
-
-        TODO:
-        * Support authentication to list unpublished articles
+        Endpoint for listing articles
         """
         articles = Article.objects(published=True)
         public_ignore = ["_id", "published", "shared", "share_handle"]
