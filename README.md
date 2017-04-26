@@ -5,6 +5,8 @@ build things.
 
 ## Objects
 ### Base
+Base objects are what all my objects inherit from. They just provide some convenience fields and methods.
+
 #### Fields
 | Field | Description |
 | --- | --- |
@@ -18,7 +20,6 @@ Articles are my writing. They contain long-form markdown about my thoughts.
 #### Fields
 | Field | Description |
 | --- | --- |
-| `_id` | An ObjectId corresponding to the Article's document in the DB |
 | `title` | A string article title |
 | `content` | Markdown string with the content of the article |
 | `published` | Boolean field denoting wether this article has been published (public) |
