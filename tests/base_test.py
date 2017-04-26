@@ -21,6 +21,8 @@ class BaseTest(unittest.TestCase):
         self.simple_article = Article(
             title="My New Article",
             content="# Hello World 🏄")
+
+        self.simple_article.generate_slug()
         self.simple_article.save()
 
     def tearDown(self):
