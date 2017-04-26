@@ -5,9 +5,8 @@ from mongoengine.fields import (
     UUIDField
 )
 import uuid
-import unidecode
-import re
 from markdown import markdown as HTML_from_markdown
+from slugify import slugify
 
 from models.base import Base
 
@@ -45,7 +44,4 @@ class Article(Base):
         self.increment_count("read", factor)
 
     def generate_slug(self):
-        slug = unidecode.unidecode(self.title).lower()
-        slug = slug.strip()
-        slug = re.sub(r'\W+', '-', slug)
-        self.slug = slug[:256]
+        self.slug = slugify(self.title)[:256]
