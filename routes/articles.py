@@ -25,7 +25,9 @@ class Articles(Resource):
         """
         fields = request.get_json() or {}
         article = Article(**fields)
-        article.generate_slug()
+
+        if article.slug is None:
+            article.generate_slug()
 
         try:
             article.save()
