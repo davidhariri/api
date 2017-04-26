@@ -19,7 +19,9 @@ class Article(Base):
     love_count = IntField(default=0)
     read_count = IntField(default=0)
     share_handle = UUIDField(default=uuid.uuid4)
-    slug = StringField(max_length=256, required=True)
+    slug = StringField(max_length=256, required=True, unique=True)
+
+    # TODO: slug must be unique
 
     meta = {
         "indexes": ["share_handle", "slug"]

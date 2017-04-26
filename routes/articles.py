@@ -4,10 +4,15 @@ from flask import request
 from models.article import Article
 
 from mongoengine.errors import (
-    ValidationError)
+    ValidationError,
+    NotUniqueError
+)
 
 MSG_INVALID = "Sorry, your article could not be saved"
-EMPTY_BODY = "You need some fields there "
+MSG_DUPLICATE = (
+    "Sorry, that slug is already taken; "
+    "Try a different article title"
+)
 
 
 class Articles(Resource):
@@ -29,5 +34,7 @@ class Articles(Resource):
                 "message": MSG_INVALID,
                 "invalid": ve.to_dict()
             }, 400
+        except NotUniqueError:
+            return {"message": MSG_DUPLICATE}, 400
 
         return a.to_dict(), 201
