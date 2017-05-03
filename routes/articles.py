@@ -2,6 +2,7 @@ from flask_restful import Resource
 from flask import request
 
 from models.article import Article
+from helpers.auth import security
 
 from mongoengine.errors import (
     ValidationError,
@@ -19,12 +20,21 @@ class Articles(Resource):
     """
     Routes defined for manipluating Article objects
     """
-    def post(self):
+    @security(True)
+    def post(self, authorized):
         """
         Endpoint for creating new Articles
         """
         fields = request.get_json() or {}
         article = Article(**fields)
+
+        if article.title is None:
+            return {
+                "invalid": {
+                    "title": "Field is required"
+                },
+                "message": MSG_INVALID
+            }, 400
 
         if article.slug is None:
             article.generate_slug()
@@ -41,7 +51,8 @@ class Articles(Resource):
 
         return article.to_dict(), 201
 
-    def get(self):
+    @security(False)
+    def get(self, authorized):
         """
         Endpoint for listing articles
         """

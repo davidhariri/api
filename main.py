@@ -11,7 +11,8 @@ app = Flask(__name__)
 # MARK - Setup Services
 mongoengine.connect(
     host=os.environ.get("MONGODB_URI", "localhost:27017"),
-    db="dhariri")
+    db="dhariri"
+)
 
 # Set up Flask-Restful API wrapper
 api = API(app)
