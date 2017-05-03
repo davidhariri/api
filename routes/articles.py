@@ -51,16 +51,20 @@ class Articles(Resource):
 
         return article.to_dict(), 201
 
-    @security(False)
+    @security()
     def get(self, authorized):
         """
         Endpoint for listing articles
         """
-        articles = Article.objects(published=True)
-        public_ignore = ["_id", "published", "shared", "share_handle"]
+        if authorized:
+            articles = Article.objects()
+            ignore_fields = []
+        else:
+            articles = Article.objects(published=True)
+            ignore_fields = ["_id", "published", "shared", "share_handle"]
 
         return {
             "articles": list(
-                map(lambda a: a.to_dict(public_ignore), articles)
+                map(lambda a: a.to_dict(ignore_fields), articles)
             )
         }
