@@ -14,5 +14,5 @@ class TestBase(BaseTest):
             round(base.created.timestamp(), 3),
             round(base.updated.timestamp(), 3))
 
-        base.was_updated()
+        base._was_updated()
         self.assertFalse(base.created == base.updated)

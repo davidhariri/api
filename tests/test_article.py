@@ -7,8 +7,9 @@ class TestArticle(BaseTest):
         Tests that render_html returns valid HTML
         """
         self.simple_article.content = "# Test"
-        html = self.simple_article.render_html()
-        self.assertEquals(html, "<h1>Test</h1>")
+        self.simple_article._generate_html()
+        self.assertEquals(
+            self.simple_article.html_content, "<h1>Test</h1>")
 
     def test_increment_love_count_default(self):
         """
@@ -16,7 +17,6 @@ class TestArticle(BaseTest):
         by default
         """
         self.simple_article.increment_love_count()
-        self.simple_article.was_updated()
         self.simple_article.save()
         self.assertEquals(self.simple_article.love_count, 1)
 
@@ -26,7 +26,6 @@ class TestArticle(BaseTest):
         our custom factor
         """
         self.simple_article.increment_love_count(9)
-        self.simple_article.was_updated()
         self.simple_article.save()
         self.assertEquals(self.simple_article.love_count, 9)
 
@@ -36,7 +35,6 @@ class TestArticle(BaseTest):
         by default
         """
         self.simple_article.increment_read_count()
-        self.simple_article.was_updated()
         self.simple_article.save()
         self.assertEquals(self.simple_article.read_count, 1)
 
@@ -46,7 +44,6 @@ class TestArticle(BaseTest):
         our custom factor
         """
         self.simple_article.increment_read_count(9)
-        self.simple_article.was_updated()
         self.simple_article.save()
         self.assertEquals(self.simple_article.read_count, 9)
 
@@ -64,6 +61,6 @@ class TestArticle(BaseTest):
 
         for t in titles:
             self.simple_article.title = t[0]
-            self.simple_article.generate_slug()
+            self.simple_article._generate_slug()
             self.simple_article.save()
             self.assertEquals(self.simple_article.slug, t[1])

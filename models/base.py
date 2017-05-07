@@ -42,8 +42,20 @@ class Base(Document):
         "abstract": True
     }
 
-    def was_updated(self):
+    # MARK - Private methods
+
+    def _was_updated(self):
+        # Changes the updated field to the current timestamp
         self.updated = datetime.now()
+
+    # MARK - Public methods
+
+    def save(self, *args, **kwargs):
+        # Runs some tasks that always have to be run when saved
+        self._was_updated()
+
+        # Run normal mongoengine save method
+        super(Base, self).save(*args, **kwargs)
 
     def to_dict(self, filters=[]):
         d = translate_bson_data_to_json_safe_data(self.to_mongo())

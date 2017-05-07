@@ -36,9 +36,6 @@ class Articles(Resource):
                 "message": MSG_INVALID
             }, 400
 
-        if article.slug is None:
-            article.generate_slug()
-
         try:
             article.save()
         except ValidationError as ve:
