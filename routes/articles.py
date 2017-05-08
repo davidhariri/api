@@ -20,6 +20,8 @@ MSG_DUPLICATE = (
 MSG_NOT_FOUND = "Sorry, that article could not be found"
 MSG_INVALID_FIELD = "Sorry, one or more of your fields do not exist"
 
+# MARK - Private helpers
+
 
 def _save_article(article, success_code=200):
     try:
@@ -37,6 +39,24 @@ def _save_article(article, success_code=200):
     print(article.title)
 
     return article.to_dict(), success_code
+
+
+def _id_or_slug_to_query(id_or_slug):
+    """
+    Given a string that might be an objectid string or a human readable
+    URL slug string, return a query dictionary that uses the correct one
+
+    NOTE: a limitation of this function is that if a URL slug is an
+    objectid, it will return a query on id instead of slug
+    """
+    try:
+        query = {"id": ObjectId(id_or_slug)}
+    except Exception:
+        query = {"slug": id_or_slug}
+
+    return query
+
+# MARK - Endpoint Resources
 
 
 class ArticlesEndpoint(Resource):
@@ -78,22 +98,6 @@ class ArticlesEndpoint(Resource):
                 map(lambda a: a.to_dict(ignore_fields), articles)
             )
         }
-
-
-def _id_or_slug_to_query(id_or_slug):
-    """
-    Given a string that might be an objectid string or a human readable
-    URL slug string, return a query dictionary that uses the correct one
-
-    NOTE: a limitation of this function is that if a URL slug is an
-    objectid, it will return a query on id instead of slug
-    """
-    try:
-        query = {"id": ObjectId(id_or_slug)}
-    except Exception:
-        query = {"slug": id_or_slug}
-
-    return query
 
 
 class ArticleEndpoint(Resource):
