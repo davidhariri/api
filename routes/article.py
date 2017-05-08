@@ -2,6 +2,7 @@ from flask_restful import Resource
 from mongoengine.queryset.visitor import Q
 from models.article import Article
 from bson.objectid import ObjectId
+from helpers.auth import security
 
 MSG_NOT_FOUND = "Sorry, that article could not be found"
 
@@ -10,10 +11,9 @@ class ArticleEndpoint(Resource):
     """
     Route used for reading, updating, deleting a single article
     """
-    def get(self, id_or_slug):
+    @security(False)
+    def get(self, id_or_slug, authorized):
         """Retrieves an article by it's identifier"""
-        # TODO: Use authentication to block access to unpublished
-        # articles
 
         try:
             id_or_slug = ObjectId(id_or_slug)
@@ -22,9 +22,19 @@ class ArticleEndpoint(Resource):
             query = {"slug": id_or_slug}
             pass
 
-        articles = Article.objects(**query)
+        if authorized:
+            articles = Article.objects(**query)
+        else:
+            articles = Article.objects.filter(
+                Q(**query) & (Q(shared=True) | Q(published=True))
+            )
 
         if len(articles) == 0:
             return {"message": MSG_NOT_FOUND}, 404
 
-        return articles[0].to_dict(), 200
+        if authorized:
+            ignore_fields = []
+        else:
+            ignore_fields = ["_id", "published", "shared", "share_handle"]
+
+        return articles[0].to_dict(ignore_fields), 200
