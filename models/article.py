@@ -5,6 +5,7 @@ from mongoengine.fields import (
     UUIDField
 )
 import uuid
+import re
 from markdown import markdown as HTML_from_markdown
 from slugify import slugify
 
@@ -14,12 +15,13 @@ from models.base import Base
 class Article(Base):
     title = StringField(max_length=512, min_length=1, required=True)
     content = StringField(min_length=1, required=True)
-    html_content = StringField()
+    html_content = StringField(default="")
     published = BooleanField(default=False)
     shared = BooleanField(default=False)
     love_count = IntField(default=0)
     read_count = IntField(default=0)
     share_handle = UUIDField(default=uuid.uuid4)
+    description = StringField(default="")
     slug = StringField(
         min_length=1, max_length=256, required=True, unique=True)
 
@@ -46,6 +48,16 @@ class Article(Base):
         """
         self.slug = slugify(self.title)[:256]
 
+    def _generate_description(self, word_count=50):
+        description = re.sub("<[^<]+?>", "", self.html_content)
+
+        if len(description) > 320:
+            description = " ".join(
+                description.split(" ")[:word_count]
+            ) + "..."
+
+        self.description = description
+
     # MARK - Public methods
 
     def increment_love_count(self, factor=1):
@@ -62,6 +74,9 @@ class Article(Base):
             self._generate_slug()
 
         self._generate_html()
+
+        if self.html_content is not None and len(self.html_content) > 0:
+            self._generate_description()
 
         # Run normal mongoengine save method
         super(Article, self).save(*args, **kwargs)

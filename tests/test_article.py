@@ -64,3 +64,25 @@ class TestArticle(BaseTest):
             self.simple_article._generate_slug()
             self.simple_article.save()
             self.assertEquals(self.simple_article.slug, t[1])
+
+    def test_generate_description_short(self):
+        """
+        Tests that a short article has a description with no
+        trailing '...'
+        """
+        self.simple_article.content = "# Hello World 👋"
+        self.simple_article.save()
+        self.assertEquals(
+            self.simple_article.description, "Hello World 👋"
+        )
+
+    def test_generate_description_long(self):
+        """
+        Tests that a long article has a description with a
+        trailing '...'
+        """
+        self.simple_article.content = "word " * 100
+        self.simple_article.save()
+        self.assertEquals(
+            self.simple_article.description, ("word " * 50)[:-1] + "..."
+        )
