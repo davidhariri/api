@@ -1,14 +1,15 @@
 from flask_restful import Resource
-from flask import request
 from bson.objectid import ObjectId
 from mongoengine.queryset.visitor import Q
 
 from models.article import Article
 from helpers.auth import security
+from helpers.io import json_input
 
 from mongoengine.errors import (
     ValidationError,
-    NotUniqueError
+    NotUniqueError,
+    FieldDoesNotExist
 )
 
 MSG_INVALID = "Sorry, your article could not be saved"
@@ -17,6 +18,25 @@ MSG_DUPLICATE = (
     "Try a different article title"
 )
 MSG_NOT_FOUND = "Sorry, that article could not be found"
+MSG_INVALID_FIELD = "Sorry, one or more of your fields do not exist"
+
+
+def _save_article(article, success_code=200):
+    try:
+        article.save()
+    except ValidationError as ve:
+        return {
+            "message": MSG_INVALID,
+            "invalid": ve.to_dict()
+        }, 400
+    except NotUniqueError:
+        return {"message": MSG_DUPLICATE}, 400
+    except FieldDoesNotExist:
+        return {"message": MSG_INVALID_FIELD}, 400
+
+    print(article.title)
+
+    return article.to_dict(), success_code
 
 
 class ArticlesEndpoint(Resource):
@@ -24,11 +44,11 @@ class ArticlesEndpoint(Resource):
     Routes defined for manipluating Article objects
     """
     @security(True)
-    def post(self, authorized):
+    @json_input(Article._fields)
+    def post(self, authorized, fields):
         """
         Endpoint for creating new Articles
         """
-        fields = request.get_json() or {}
         article = Article(**fields)
 
         if article.title is None:
@@ -39,17 +59,7 @@ class ArticlesEndpoint(Resource):
                 "message": MSG_INVALID
             }, 400
 
-        try:
-            article.save()
-        except ValidationError as ve:
-            return {
-                "message": MSG_INVALID,
-                "invalid": ve.to_dict()
-            }, 400
-        except NotUniqueError:
-            return {"message": MSG_DUPLICATE}, 400
-
-        return article.to_dict(), 201
+        return _save_article(article, 201)
 
     @security()
     def get(self, authorized):
@@ -70,20 +80,30 @@ class ArticlesEndpoint(Resource):
         }
 
 
+def _id_or_slug_to_query(id_or_slug):
+    """
+    Given a string that might be an objectid string or a human readable
+    URL slug string, return a query dictionary that uses the correct one
+
+    NOTE: a limitation of this function is that if a URL slug is an
+    objectid, it will return a query on id instead of slug
+    """
+    try:
+        query = {"id": ObjectId(id_or_slug)}
+    except Exception:
+        query = {"slug": id_or_slug}
+
+    return query
+
+
 class ArticleEndpoint(Resource):
     """
     Route used for reading, updating, deleting a single article
     """
-    @security(False)
+    @security()
     def get(self, id_or_slug, authorized):
         """Retrieves an article by it's identifier"""
-
-        try:
-            id_or_slug = ObjectId(id_or_slug)
-            query = {"id": id_or_slug}
-        except Exception:
-            query = {"slug": id_or_slug}
-            pass
+        query = _id_or_slug_to_query(id_or_slug)
 
         if authorized:
             articles = Article.objects(**query)
@@ -99,9 +119,20 @@ class ArticleEndpoint(Resource):
 
         return articles[0].to_dict(ignore_fields), 200
 
-    def patch(self, id_or_slug, authorized):
+    @security(True)
+    @json_input(Article._fields)
+    def patch(self, id_or_slug, authorized, fields):
         """
-        Route for modifying a single article. This endpoint is
+        Route for modifying a single article's fields. This endpoint is
         protected
         """
-        pass
+        query = _id_or_slug_to_query(id_or_slug)
+        articles = Article.objects(**query)
+
+        if len(articles) == 0:
+            return {"message": MSG_NOT_FOUND}, 404
+
+        article = articles[0]
+        article.modify(**fields)
+
+        return _save_article(article)

@@ -73,10 +73,9 @@ class Article(Base):
         if self.slug is None:
             self._generate_slug()
 
+        self.validate()
         self._generate_html()
-
-        if self.html_content is not None and len(self.html_content) > 0:
-            self._generate_description()
+        self._generate_description()
 
         # Run normal mongoengine save method
-        super(Article, self).save(*args, **kwargs)
+        super(Article, self).save(validate=False, *args, **kwargs)
