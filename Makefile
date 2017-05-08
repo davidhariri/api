@@ -9,4 +9,4 @@ test:
 dev:
 	pipenv shell
 	clear
-	heroku local
+	python main.py

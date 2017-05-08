@@ -16,7 +16,7 @@ MSG_DUPLICATE = (
 )
 
 
-class Articles(Resource):
+class ArticlesEndpoint(Resource):
     """
     Routes defined for manipluating Article objects
     """

@@ -1,7 +1,7 @@
 from flask_restful import Resource
 
 
-class Root(Resource):
+class RootEndpoint(Resource):
     """
     Routes defined for manipluating Article objects
     """

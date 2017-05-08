@@ -23,4 +23,4 @@ for route, resource in route_dict.items():
 
 if __name__ == "__main__":
     # TODO: Make this an ENV var
-    app.run(debug=os.environ.get("DEBUG", False))
+    app.run(debug=os.environ.get("DEBUG", True))
