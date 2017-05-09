@@ -21,6 +21,7 @@ MSG_DUPLICATE = (
 )
 MSG_NOT_FOUND = "Sorry, that article could not be found"
 MSG_INVALID_FIELD = "Sorry, one or more of your fields do not exist"
+MSG_DELETED = "Article '{title}' ({_id}) was deleted"
 
 NON_PUBLIC_FIELDS = ["_id", "published", "shared"]
 
@@ -144,3 +145,21 @@ class ArticleEndpoint(Resource):
         article.modify(**fields)
 
         return _save_article(article)
+
+    @security(True)
+    def delete(self, id_or_slug, authorized):
+        """
+        Route for deleting an article
+        """
+        query = _id_or_slug_to_query(id_or_slug)
+        articles = Article.objects(**query)
+
+        if len(articles) == 0:
+            return {"message": MSG_NOT_FOUND}, 404
+
+        article = articles[0]
+        article.delete()
+
+        return {
+            "message": MSG_DELETED.format(**article.to_dict())
+        }, 200
