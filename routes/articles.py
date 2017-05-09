@@ -28,6 +28,28 @@ NON_PUBLIC_FIELDS = ["_id", "published", "shared"]
 # MARK - Private helpers
 
 
+def _needs_article():
+    """
+    Abstraction decorator for endpoints that need an article to be
+    useful
+    """
+    def decorator(function):
+        def wrapper(*args, **kwargs):
+            id_or_slug = kwargs["id_or_slug"]
+
+            query = _id_or_slug_to_query(id_or_slug)
+            articles = Article.objects(**query)
+
+            if len(articles) == 0:
+                return {"message": MSG_NOT_FOUND}, 404
+
+            kwargs["article"] = articles[0]
+
+            return function(*args, **kwargs)
+        return wrapper
+    return decorator
+
+
 def _save_article(article, success_code=200):
     try:
         article.save()
@@ -40,8 +62,6 @@ def _save_article(article, success_code=200):
         return {"message": MSG_DUPLICATE}, 400
     except FieldDoesNotExist:
         return {"message": MSG_INVALID_FIELD}, 400
-
-    print(article.title)
 
     return article.to_dict(), success_code
 
@@ -110,54 +130,37 @@ class ArticleEndpoint(Resource):
     Route used for reading, updating, deleting a single article
     """
     @security()
-    def get(self, id_or_slug, authorized):
+    @_needs_article()
+    def get(self, article, authorized, **kwargs):
         """Retrieves an article by it's identifier"""
-        query = _id_or_slug_to_query(id_or_slug)
-
         if authorized:
-            articles = Article.objects(**query)
             ignore_fields = []
         else:
-            articles = Article.objects.filter(
-                Q(**query) & (Q(shared=True) | Q(published=True))
-            )
+            if not article.published and not article.shared:
+                return {"message": MSG_NOT_FOUND}, 404
+
             ignore_fields = NON_PUBLIC_FIELDS
 
-        if len(articles) == 0:
-            return {"message": MSG_NOT_FOUND}, 404
-
-        return articles[0].to_dict(ignore_fields), 200
+        return article.to_dict(ignore_fields), 200
 
     @security(True)
     @json_input(Article._fields)
-    def patch(self, id_or_slug, authorized, fields):
+    @_needs_article()
+    def patch(self, article, fields, **kwargs):
         """
         Route for modifying a single article's fields. This endpoint is
         protected
         """
-        query = _id_or_slug_to_query(id_or_slug)
-        articles = Article.objects(**query)
-
-        if len(articles) == 0:
-            return {"message": MSG_NOT_FOUND}, 404
-
-        article = articles[0]
-        article.modify(**fields)
+        article.update_fields(fields)
 
         return _save_article(article)
 
     @security(True)
-    def delete(self, id_or_slug, authorized):
+    @_needs_article()
+    def delete(self, article, authorized, **kwargs):
         """
         Route for deleting an article
         """
-        query = _id_or_slug_to_query(id_or_slug)
-        articles = Article.objects(**query)
-
-        if len(articles) == 0:
-            return {"message": MSG_NOT_FOUND}, 404
-
-        article = articles[0]
         article.delete()
 
         return {

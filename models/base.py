@@ -50,6 +50,12 @@ class Base(Document):
 
     # MARK - Public methods
 
+    def update_fields(self, updates):
+        # NOTE: Not the most safe function (Reference fields etc...)
+        for key, value in updates.items():
+            if key in self._fields.keys():
+                setattr(self, key, value)
+
     def save(self, *args, **kwargs):
         # Runs some tasks that always have to be run when saved
         self._was_updated()
