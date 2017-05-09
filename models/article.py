@@ -4,7 +4,6 @@ from mongoengine.fields import (
     IntField,
     UUIDField
 )
-import uuid
 import re
 from markdown import markdown as HTML_from_markdown
 from slugify import slugify
@@ -20,13 +19,12 @@ class Article(Base):
     shared = BooleanField(default=False)
     love_count = IntField(default=0)
     read_count = IntField(default=0)
-    share_handle = UUIDField(default=uuid.uuid4)
     description = StringField(default="")
     slug = StringField(
         min_length=1, max_length=256, required=True, unique=True)
 
     meta = {
-        "indexes": ["share_handle", "slug"]
+        "indexes": ["slug"]
     }
 
     # MARK - Private methods

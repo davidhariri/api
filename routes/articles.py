@@ -12,6 +12,8 @@ from mongoengine.errors import (
     FieldDoesNotExist
 )
 
+# MARK - Constants
+
 MSG_INVALID = "Sorry, your article could not be saved"
 MSG_DUPLICATE = (
     "Sorry, that slug is already taken; "
@@ -19,6 +21,8 @@ MSG_DUPLICATE = (
 )
 MSG_NOT_FOUND = "Sorry, that article could not be found"
 MSG_INVALID_FIELD = "Sorry, one or more of your fields do not exist"
+
+NON_PUBLIC_FIELDS = ["_id", "published", "shared"]
 
 # MARK - Private helpers
 
@@ -91,7 +95,7 @@ class ArticlesEndpoint(Resource):
             ignore_fields = []
         else:
             articles = Article.objects(published=True)
-            ignore_fields = ["_id", "published", "shared", "share_handle"]
+            ignore_fields = NON_PUBLIC_FIELDS
 
         return {
             "articles": list(
@@ -116,7 +120,7 @@ class ArticleEndpoint(Resource):
             articles = Article.objects.filter(
                 Q(**query) & (Q(shared=True) | Q(published=True))
             )
-            ignore_fields = ["_id", "published", "shared", "share_handle"]
+            ignore_fields = NON_PUBLIC_FIELDS
 
         if len(articles) == 0:
             return {"message": MSG_NOT_FOUND}, 404
