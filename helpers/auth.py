@@ -36,7 +36,7 @@ def fingerprint(strict=False, expiry=(60 * 60), namespace="dhariri"):
             digest = namespace + hashlib.md5(to_digest).hexdigest()
 
             if strict:
-                if redis.exists(digest):
+                if redis.get(digest) is not None:
                     return {
                         "message": MSG_TOO_MANY
                     }, 429
