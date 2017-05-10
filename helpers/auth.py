@@ -1,7 +1,34 @@
 from flask import request
 import uuid
+import hashlib
 
 from models.token import AuthToken
+
+
+def fingerprint(strict=False):
+    """
+    Endpoint fingerprinting bases on request headers. Allows for public
+    actions to be performed without authentication like reading, liking
+    etc...
+
+    if strict, we should throw a 429 Too many requests if the
+    fingerprint is in Redis
+    """
+    def decorator(function):
+        def wrapper(*args, **kwargs):
+            k = (
+                request.headers.get("User-Agent", "") +
+                request.remote_addr
+            )
+            k = k.encode("utf-8")
+
+            key_digest = namespace + hashlib.md5(k).hexdigest()
+
+            kwargs["fingerprint"] = key_digest
+
+            return function(*args, **kwargs)
+        return wrapper
+    return decorator
 
 
 def security(strict=False):

@@ -2,7 +2,10 @@ from flask_restful import Resource
 from bson.objectid import ObjectId
 
 from models.article import Article
-from helpers.auth import security
+from helpers.auth import (
+    security,
+    fingerprint
+)
 from helpers.io import json_input
 
 from mongoengine.errors import (
@@ -185,6 +188,7 @@ class ArticleActionsEndpoint(Resource):
           prevent multiple likes/reads on the same article from the same
           client
     """
+    @fingerprint(True)
     @_needs_article()
     def put(self, article, action, **kwargs):
         if action in VALID_ACTIONS:
