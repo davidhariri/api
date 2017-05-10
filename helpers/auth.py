@@ -1,11 +1,21 @@
 from flask import request
 import uuid
 import hashlib
-
+from redis import StrictRedis
+import os
 from models.token import AuthToken
 
+redis = StrictRedis(
+    host=os.getenv("REDIS_URI", "localhost"),
+    port=os.getenv("REDIS_PORT", 6379)
+)
 
-def fingerprint(strict=False):
+# MARK - Constants
+
+MSG_TOO_MANY = "Sorry, you've performed this request too many times"
+
+
+def fingerprint(strict=False, expiry=(60 * 60), namespace="dhariri_"):
     """
     Endpoint fingerprinting bases on request headers. Allows for public
     actions to be performed without authentication like reading, liking
@@ -16,15 +26,24 @@ def fingerprint(strict=False):
     """
     def decorator(function):
         def wrapper(*args, **kwargs):
-            k = (
+            to_digest = (
                 request.headers.get("User-Agent", "") +
-                request.remote_addr
+                request.remote_addr +
+                request.path
             )
-            k = k.encode("utf-8")
+            to_digest = to_digest.encode("utf-8")
 
-            key_digest = namespace + hashlib.md5(k).hexdigest()
+            digest = namespace + hashlib.md5(to_digest).hexdigest()
 
-            kwargs["fingerprint"] = key_digest
+            if strict:
+                if redis.exists(digest):
+                    return {
+                        "message": MSG_TOO_MANY
+                    }, 429
+                else:
+                    redis.setex(digest, expiry, 0)
+
+            kwargs["fingerprint"] = digest
 
             return function(*args, **kwargs)
         return wrapper
