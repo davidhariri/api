@@ -1,11 +1,11 @@
 from flask import request
 import uuid
 import hashlib
-from redis import StrictRedis
+from redis import Redis
 import os
 from models.token import AuthToken
 
-redis = StrictRedis.from_url(
+redis = Redis.from_url(
     os.getenv("REDIS_URI", "redis://localhost:6379/0"))
 
 # MARK - Constants
@@ -39,7 +39,7 @@ def fingerprint(strict=False, expiry=(60 * 60), namespace="dhariri"):
                         "message": MSG_TOO_MANY
                     }, 429
                 else:
-                    redis.setex(digest, expiry, 1)
+                    redis.setex(digest, 1, expiry)
 
             kwargs["fingerprint"] = digest
 
