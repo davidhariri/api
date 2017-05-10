@@ -6,7 +6,7 @@ import os
 from models.token import AuthToken
 
 redis = StrictRedis(
-    host=os.getenv("REDIS_URI", "localhost"),
+    host=os.getenv("REDIS_URI", "localhost").encode("idna"),
     port=os.getenv("REDIS_PORT", 6379)
 )
 
