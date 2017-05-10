@@ -26,7 +26,7 @@ def fingerprint(strict=False, expiry=(60 * 60), namespace="dhariri"):
         def wrapper(*args, **kwargs):
             r_addr = request.remote_addr
             # Use X-Forwareded-For first because of Heroku's balancers
-            client_ip = request.headers.get("X-Forwareded-For", r_addr)
+            client_ip = request.headers.get("X-Forwarded-For", r_addr)
 
             to_digest = (
                 request.headers.get("User-Agent", "") +
