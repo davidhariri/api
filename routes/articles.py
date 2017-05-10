@@ -1,6 +1,5 @@
 from flask_restful import Resource
 from bson.objectid import ObjectId
-from mongoengine.queryset.visitor import Q
 
 from models.article import Article
 from helpers.auth import security
@@ -22,8 +21,10 @@ MSG_DUPLICATE = (
 MSG_NOT_FOUND = "Sorry, that article could not be found"
 MSG_INVALID_FIELD = "Sorry, one or more of your fields do not exist"
 MSG_DELETED = "Article '{title}' ({_id}) was deleted"
+MSG_INVALID_ACTION = "Sorry, '{}' is not a valid action"
 
 NON_PUBLIC_FIELDS = ["_id", "published", "shared"]
+VALID_ACTIONS = {"read", "love"}
 
 # MARK - Private helpers
 
@@ -32,6 +33,8 @@ def _needs_article():
     """
     Abstraction decorator for endpoints that need an article to be
     useful
+
+    returns 404 or passes an article into the next function
     """
     def decorator(function):
         def wrapper(*args, **kwargs):
@@ -50,7 +53,10 @@ def _needs_article():
     return decorator
 
 
-def _save_article(article, success_code=200):
+def _save_article(article, success_code=200, response_dict=None):
+    """
+    Saves an article and handles validation errors etc...
+    """
     try:
         article.save()
     except ValidationError as ve:
@@ -62,6 +68,9 @@ def _save_article(article, success_code=200):
         return {"message": MSG_DUPLICATE}, 400
     except FieldDoesNotExist:
         return {"message": MSG_INVALID_FIELD}, 400
+
+    if response_dict is not None:
+        return response_dict, success_code
 
     return article.to_dict(), success_code
 
@@ -166,3 +175,26 @@ class ArticleEndpoint(Resource):
         return {
             "message": MSG_DELETED.format(**article.to_dict())
         }, 200
+
+
+class ArticleActionsEndpoint(Resource):
+    """
+    Route to perform certain actions on an Article like read, like etc.
+
+    TODO: This endpoint could use cookies and a better response to
+          prevent multiple likes/reads on the same article from the same
+          client
+    """
+    @_needs_article()
+    def put(self, article, action, **kwargs):
+        if action in VALID_ACTIONS:
+            if action == "love":
+                article.increment_love_count()
+            elif action == "read":
+                article.increment_read_count()
+        else:
+            return {
+                "message": MSG_INVALID_ACTION.format(action)
+            }, 400
+
+        return _save_article(article, response_dict={"message": "OK"})
