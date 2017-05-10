@@ -15,7 +15,7 @@ redis = StrictRedis(
 MSG_TOO_MANY = "Sorry, you've performed this request too many times"
 
 
-def fingerprint(strict=False, expiry=(60 * 60), namespace="dhariri_"):
+def fingerprint(strict=False, expiry=(60 * 60), namespace="dhariri"):
     """
     Endpoint fingerprinting bases on request headers. Allows for public
     actions to be performed without authentication like reading, liking
