@@ -5,10 +5,8 @@ from redis import StrictRedis
 import os
 from models.token import AuthToken
 
-redis = StrictRedis(
-    host=os.getenv("REDIS_URI", "localhost").encode("idna"),
-    port=os.getenv("REDIS_PORT", 6379)
-)
+redis = StrictRedis.from_url(
+    os.getenv("REDIS_URI", "redis://localhost:6379/0"))
 
 # MARK - Constants
 
@@ -36,12 +34,12 @@ def fingerprint(strict=False, expiry=(60 * 60), namespace="dhariri"):
             digest = namespace + hashlib.md5(to_digest).hexdigest()
 
             if strict:
-                if redis.get(digest) is not None:
+                if redis.exists(digest):
                     return {
                         "message": MSG_TOO_MANY
                     }, 429
                 else:
-                    redis.setex(digest, expiry, True)
+                    redis.setex(digest, expiry, 1)
 
             kwargs["fingerprint"] = digest
 
