@@ -41,7 +41,7 @@ def fingerprint(strict=False, expiry=(60 * 60), namespace="dhariri"):
                         "message": MSG_TOO_MANY
                     }, 429
                 else:
-                    redis.setex(digest, expiry, 0)
+                    redis.setex(digest, expiry, True)
 
             kwargs["fingerprint"] = digest
 
