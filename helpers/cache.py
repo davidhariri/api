@@ -15,10 +15,11 @@ def cached(expiry=24 * 60 * 60, namespace=None, debug=False):
     def decorator(function):
         @wraps(function)
         def func(*args, **kwargs):
-            args_key = str(pickle.dumps([kwargs]))
+            args_list = map(lambda k: (k, kwargs[k]), kwargs.keys())
+            args_key = str(pickle.dumps(sorted(list(args_list))))
 
             if debug:
-                print(">> CACHE KEY:", [kwargs])
+                print(">> CACHE:ARGS:", [kwargs])
 
             cache_key = "{namespace}:{hash}".format(
                 namespace=namespace or function.__name__,
@@ -33,7 +34,7 @@ def cached(expiry=24 * 60 * 60, namespace=None, debug=False):
             # If the result was None, we need to evaluate the function
             if not cache_result:
                 if debug:
-                    print(">> CACHE MISS: ", cache_key)
+                    print(">> CACHE:MISS: ", cache_key)
 
                 func_result = function(*args, **kwargs)
 
@@ -41,7 +42,7 @@ def cached(expiry=24 * 60 * 60, namespace=None, debug=False):
                 cache.setex(cache_key, expiry, pickle.dumps(func_result))
             else:
                 if debug:
-                    print(">> CACHE HIT: ", cache_key)
+                    print(">> CACHE:HIT: ", cache_key)
 
                 func_result = pickle.loads(cache_result)
 
