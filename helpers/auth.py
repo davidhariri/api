@@ -2,7 +2,10 @@ from flask import request
 import uuid
 import hashlib
 from models.token import AuthToken
-from helpers.cache import cache
+from helpers.cache import (
+    cached,
+    cache
+)
 
 # MARK - Constants
 
@@ -48,6 +51,17 @@ def fingerprint(strict=False, expiry=(60 * 60), namespace="dhariri"):
     return decorator
 
 
+@cached(namespace="tokens")
+def _find_token(token_str):
+    """
+    Simple finder function which allows for more specific caching
+    """
+    token_matches = AuthToken.objects(token=token_str)
+
+    if len(token_matches):
+        return token_matches[0]
+
+
 def security(strict=False):
     """
     Main endpoint security decorator.
@@ -77,14 +91,14 @@ def security(strict=False):
                 kwargs["authorized"] = False
 
             if token is not None:
-                matched_tokens = AuthToken.objects(token=token)
+                matched_token = _find_token(token_str=token)
 
-                if len(matched_tokens) == 0 and strict:
+                if matched_token is None and strict:
                     return {
                         "message": "Incorrect Authorization Token"
                     }, 403
 
-                kwargs["authorized"] = (len(matched_tokens) > 0)
+                kwargs["authorized"] = (matched_token is not None)
             else:
                 kwargs["authorized"] = False
 
