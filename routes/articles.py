@@ -8,6 +8,7 @@ from helpers.auth import (
 )
 from helpers.io import json_input
 from helpers.paging import paginate
+from helpers.cache import cached
 
 from mongoengine.errors import (
     ValidationError,
@@ -51,6 +52,7 @@ def _needs_article():
                 return {"message": MSG_NOT_FOUND}, 404
 
             kwargs["article"] = articles[0]
+            del kwargs["id_or_slug"]
 
             return function(*args, **kwargs)
         return wrapper
@@ -121,7 +123,8 @@ class ArticlesEndpoint(Resource):
 
     @security()
     @paginate()
-    def get(self, authorized, limit, skip, order, **kwargs):
+    @cached(namespace="articles", expiry=5, debug=True)
+    def get(self, authorized, limit, skip, order):
         """
         Endpoint for listing articles
         """
@@ -148,7 +151,8 @@ class ArticleEndpoint(Resource):
     """
     @security()
     @_needs_article()
-    def get(self, article, authorized, **kwargs):
+    @cached(namespace="articles", expiry=60, debug=True)
+    def get(self, article, authorized):
         """Retrieves an article by it's identifier"""
         if authorized:
             ignore_fields = []
