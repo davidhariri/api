@@ -1,10 +1,11 @@
-import redis
+from redis import StrictRedis
 import pickle
 import os
 from functools import wraps
 import hashlib
 
-cache = redis.StrictRedis(os.getenv("REDIS_URI", None))
+cache = StrictRedis.from_url(
+    os.getenv("REDIS_URI", "redis://localhost:6379/0"))
 
 
 def cached(expiry=24 * 60 * 60, namespace=None, debug=False):

@@ -1,8 +1,6 @@
 from flask import request
 import uuid
 import hashlib
-from redis import StrictRedis
-import os
 from models.token import AuthToken
 from helpers.cache import cache
 
