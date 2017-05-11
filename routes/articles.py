@@ -1,5 +1,6 @@
 from flask_restful import Resource
 from bson.objectid import ObjectId
+from flask import request
 
 from models.article import Article
 from helpers.auth import (
@@ -123,12 +124,18 @@ class ArticlesEndpoint(Resource):
         """
         Endpoint for listing articles
         """
-        if authorized:
-            articles = Article.objects()
-            ignore_fields = []
-        else:
-            articles = Article.objects(published=True)
+        count = int(request.args.get("size", 10))
+        skip = (int(request.args.get("page", 1)) - 1) * count
+        order = request.args.get("order", "-created")
+        query = {}
+        ignore_fields = []
+
+        if not authorized:
+            query = {"published": True}
             ignore_fields = NON_PUBLIC_FIELDS
+
+        articles = Article.objects(**query).order_by(order).skip(
+            skip).limit(count)
 
         return {
             "articles": list(
@@ -183,10 +190,6 @@ class ArticleEndpoint(Resource):
 class ArticleActionsEndpoint(Resource):
     """
     Route to perform certain actions on an Article like read, like etc.
-
-    TODO: This endpoint could use cookies and a better response to
-          prevent multiple likes/reads on the same article from the same
-          client
     """
     @fingerprint(True)
     @_needs_article()
