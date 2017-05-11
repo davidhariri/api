@@ -1,6 +1,5 @@
 from flask_restful import Resource
 from bson.objectid import ObjectId
-from flask import request
 
 from models.article import Article
 from helpers.auth import (
@@ -8,6 +7,7 @@ from helpers.auth import (
     fingerprint
 )
 from helpers.io import json_input
+from helpers.paging import paginate
 
 from mongoengine.errors import (
     ValidationError,
@@ -120,13 +120,11 @@ class ArticlesEndpoint(Resource):
         return _save_article(article, 201)
 
     @security()
-    def get(self, authorized):
+    @paginate()
+    def get(self, authorized, limit, skip, order, **kwargs):
         """
         Endpoint for listing articles
         """
-        count = int(request.args.get("size", 10))
-        skip = (int(request.args.get("page", 1)) - 1) * count
-        order = request.args.get("order", "-created")
         query = {}
         ignore_fields = []
 
@@ -135,7 +133,7 @@ class ArticlesEndpoint(Resource):
             ignore_fields = NON_PUBLIC_FIELDS
 
         articles = Article.objects(**query).order_by(order).skip(
-            skip).limit(count)
+            skip).limit(limit)
 
         return {
             "articles": list(
