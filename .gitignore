@@ -2,3 +2,7 @@
 *.pyc
 trash
 __pycache__
+*.lock
+*.log
+*.rdb
+*.temp
