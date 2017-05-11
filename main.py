@@ -2,11 +2,13 @@ import os
 from flask import Flask
 from flask_restful import Api as API
 import mongoengine
+from flask_cors import CORS
 
 from routes import route_dict
 
 # MARK - Setup Flask app
 app = Flask(__name__)
+CORS(app)
 
 # MARK - Setup Services
 mongoengine.connect(
