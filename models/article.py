@@ -1,14 +1,29 @@
 from mongoengine.fields import (
     StringField,
     BooleanField,
-    IntField,
-    UUIDField
+    IntField
 )
 import re
+import random
 from markdown import markdown as HTML_from_markdown
 from slugify import slugify
 
 from models.base import Base
+
+_SHARE_CHARS = (
+    "abcdefghijklmnopqrstuvwxyz"
+    "1234567890"
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+)
+
+
+def _random_string(l=7):
+    _ = ""
+
+    for i in range(l):
+        _ += random.choice(_SHARE_CHARS)
+
+    return _
 
 
 class Article(Base):
@@ -22,6 +37,8 @@ class Article(Base):
     description = StringField(default="")
     slug = StringField(
         min_length=1, max_length=256, required=True, unique=True)
+    share_slug = StringField(
+        required=True, unique=True, default=_random_string, sparse=True)
 
     meta = {
         "indexes": ["slug"]
@@ -45,6 +62,9 @@ class Article(Base):
         Generate the unique, URL-safe "slug" (human-friendly identifier)
         """
         self.slug = slugify(self.title)[:256]
+
+    def _generate_share_slug(self):
+        self.share_slug = _random_string()
 
     def _generate_description(self, word_count=50):
         description = re.sub("<[^<]+?>", "", self.html_content)
@@ -71,9 +91,13 @@ class Article(Base):
         if self.slug is None:
             self._generate_slug()
 
-        self.validate()
+        if self.share_slug is None:
+            self._generate_share_slug()
+
         self._generate_html()
         self._generate_description()
+
+        self.validate()
 
         # Run normal mongoengine save method
         super(Article, self).save(validate=False, *args, **kwargs)

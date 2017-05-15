@@ -86,3 +86,13 @@ class TestArticle(BaseTest):
         self.assertEquals(
             self.simple_article.description, ("word " * 50)[:-1] + "..."
         )
+
+    def test_generate_share_handle(self):
+        """
+        Tests that the Article share handle generator works
+        """
+        self.simple_article._generate_share_slug()
+        self.assertEquals(
+            len(self.simple_article.share_slug),
+            7
+        )
