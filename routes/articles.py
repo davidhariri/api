@@ -1,5 +1,12 @@
 from flask_restful import Resource
 from bson.objectid import ObjectId
+from mongoengine.queryset.visitor import Q
+
+from mongoengine.errors import (
+    ValidationError,
+    NotUniqueError,
+    FieldDoesNotExist
+)
 
 from models.article import Article
 from helpers.auth import (
@@ -9,12 +16,6 @@ from helpers.auth import (
 from helpers.io import json_input
 from helpers.paging import paginate
 from helpers.cache import cached
-
-from mongoengine.errors import (
-    ValidationError,
-    NotUniqueError,
-    FieldDoesNotExist
-)
 
 # MARK - Constants
 
@@ -34,6 +35,22 @@ VALID_ACTIONS = {"read", "love"}
 # MARK - Private helpers
 
 
+def _id_or_slug_to_query(id_or_slug):
+    """
+    Given a string that might be an objectid string or a human readable
+    URL slug string, return a query dictionary that uses the correct one
+
+    NOTE: a limitation of this function is that if a URL slug is an
+    objectid, it will return a query on id instead of slug
+    """
+    try:
+        query = {"id": ObjectId(id_or_slug)}
+    except Exception:
+        query = {"slug": id_or_slug}
+
+    return query
+
+
 def _needs_article():
     """
     Abstraction decorator for endpoints that need an article to be
@@ -46,7 +63,13 @@ def _needs_article():
             id_or_slug = kwargs["id_or_slug"]
 
             query = _id_or_slug_to_query(id_or_slug)
-            articles = Article.objects(**query)
+
+            if "id" in query:
+                articles = Article.objects(**query)
+            else:
+                _s = query["slug"]
+                articles = Article.objects(
+                    Q(slug=_s) | Q(share_slug=_s))
 
             if len(articles) == 0:
                 return {"message": MSG_NOT_FOUND}, 404
@@ -79,22 +102,6 @@ def _save_article(article, success_code=200, response_dict=None):
         return response_dict, success_code
 
     return article.to_dict(), success_code
-
-
-def _id_or_slug_to_query(id_or_slug):
-    """
-    Given a string that might be an objectid string or a human readable
-    URL slug string, return a query dictionary that uses the correct one
-
-    NOTE: a limitation of this function is that if a URL slug is an
-    objectid, it will return a query on id instead of slug
-    """
-    try:
-        query = {"id": ObjectId(id_or_slug)}
-    except Exception:
-        query = {"slug": id_or_slug}
-
-    return query
 
 # MARK - Endpoint Resources
 
