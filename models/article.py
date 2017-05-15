@@ -38,7 +38,7 @@ class Article(Base):
     slug = StringField(
         min_length=1, max_length=256, required=True, unique=True)
     share_slug = StringField(
-        required=True, unique=True, default=_random_string, sparse=True)
+        required=True, unique=True, default=_random_string)
 
     meta = {
         "indexes": ["slug"]
