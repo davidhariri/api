@@ -27,6 +27,13 @@ def _random_string(l=7):
 
 
 class Article(Base):
+    _SLUG_FIELDS = {
+        "unique": True,
+        "default": None,
+        "sparse": True,
+        "min_length": 1
+    }
+
     title = StringField(max_length=512, min_length=1, required=True)
     content = StringField(min_length=1, required=True)
     html_content = StringField(default="")
@@ -35,10 +42,8 @@ class Article(Base):
     love_count = IntField(default=0)
     read_count = IntField(default=0)
     description = StringField(default="")
-    slug = StringField(
-        min_length=1, max_length=256, required=True, unique=True)
-    share_slug = StringField(
-        required=True, unique=True, default=_random_string)
+    slug = StringField(max_length=256, **_SLUG_FIELDS)
+    share_slug = StringField(max_length=7, **_SLUG_FIELDS)
 
     meta = {
         "indexes": ["slug"]
@@ -88,10 +93,10 @@ class Article(Base):
 
     def save(self, *args, **kwargs):
         # Runs some tasks that always have to be run when saved
-        if self.slug is None:
+        if self.published and self.slug is None:
             self._generate_slug()
 
-        if self.share_slug is None:
+        if self.shared and self.share_slug is None:
             self._generate_share_slug()
 
         self._generate_html()

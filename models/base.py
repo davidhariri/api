@@ -70,7 +70,8 @@ class Base(Document):
             filtered_keys = set(filters)
 
             for k in filtered_keys:
-                del d[k]
+                if k in d:
+                    del d[k]
 
         return d
 
