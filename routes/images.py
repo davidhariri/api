@@ -3,7 +3,7 @@ from flask import request
 import tinys3
 import os
 import uuid
-from helpers.auth import fingerprint
+from helpers.auth import security
 
 _ALLOWED_TYPES = set([
     "image/png",
@@ -20,7 +20,7 @@ class ImagesEndpoint(Resource):
     """
     Routes defined for manipluating images (for blog posts etc..)
     """
-    @fingerprint(True, 10, "post-images")
+    @security(True)
     def post(self, **kwargs):
         """Base endpoint"""
         bucket = tinys3.Connection(
