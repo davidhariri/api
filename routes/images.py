@@ -4,7 +4,14 @@ import tinys3
 import os
 import uuid
 
-_ALLOWED_TYPES = set(["png", "jpg", "jpeg", "gif", "svg"])
+_ALLOWED_TYPES = set([
+    "image/png",
+    "image/jpg",
+    "image/jpeg",
+    "image/svg",
+    "image/svg+xml",
+    "image/gif"
+])
 _MSG_BAD_FORMAT = "Sorry, '{}' is not a supported format"
 
 
@@ -23,15 +30,19 @@ class ImagesEndpoint(Resource):
         file_extension = file.filename.split(".")[-1]
         file_name = "{}.{}".format(uuid.uuid4(), file_extension)
 
-        if file_extension in _ALLOWED_TYPES:
-            bucket.upload(
-                ("images/" + file_name),
-                file,
-                os.getenv("S3_BUCKET_NAME")
-            )
-        else:
+        if file.content_type not in _ALLOWED_TYPES:
             return {
                 "message": _MSG_BAD_FORMAT.format(file_extension)
             }, 400
 
-        return {"message": "OK"}, 200
+        bucket.upload(
+            ("images/" + file_name),
+            file,
+            os.getenv("S3_BUCKET_NAME")
+        )
+
+        return {
+            "url": "https://static.dhariri.com/images/{}".format(
+                file_name
+            )
+        }, 200
