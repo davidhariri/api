@@ -46,7 +46,7 @@ class Article(Base):
     share_slug = StringField(max_length=7, **_SLUG_FIELDS)
 
     meta = {
-        "indexes": ["slug"]
+        "indexes": ["slug", "share_slug", "published"]
     }
 
     # MARK - Private methods
