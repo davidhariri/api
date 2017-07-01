@@ -87,6 +87,15 @@ class TestArticle(BaseTest):
             self.simple_article.description, ("word " * 50)[:-1] + "..."
         )
 
+    def test_save_empty_article(self):
+        """
+        Tests that an article can be created without a title or content
+        which would be more like a note
+        """
+        self.simple_article.content = ""
+        self.simple_article.title = ""
+        self.simple_article.save()
+
     def test_generate_share_handle(self):
         """
         Tests that the Article share handle generator works

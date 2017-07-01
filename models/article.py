@@ -34,8 +34,8 @@ class Article(Base):
         "min_length": 1
     }
 
-    title = StringField(max_length=512, min_length=1, required=True)
-    content = StringField(min_length=1, required=True)
+    title = StringField(max_length=512, min_length=0, required=True)
+    content = StringField(min_length=0, required=True)
     html_content = StringField(default="")
     published = BooleanField(default=False)
     shared = BooleanField(default=False)
