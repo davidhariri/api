@@ -50,3 +50,13 @@ def cached(expiry=24 * 60 * 60, namespace=None, debug=False):
             return func_result
         return func
     return decorator
+
+
+def invalidate(prefix):
+    """
+    Function that invalidate all keys belonging to a given prefix
+    """
+    keys = cache.keys("{}:*".format(prefix))
+
+    for k in keys:
+        cache.delete(k)

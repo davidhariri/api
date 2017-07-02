@@ -7,6 +7,7 @@ import re
 import random
 from markdown import markdown as HTML_from_markdown
 from slugify import slugify
+from helpers.cache import invalidate as invalidate_cached
 
 from models.base import Base
 
@@ -103,6 +104,8 @@ class Article(Base):
         self._generate_description()
 
         self.validate()
+
+        invalidate_cached("articles")
 
         # Run normal mongoengine save method
         super(Article, self).save(validate=False, *args, **kwargs)
