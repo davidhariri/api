@@ -74,8 +74,8 @@ class Base(Document):
         # Invalidate cached objects
         invalidate_cached(self._get_collection_name())
 
-        # Run normal mongoengine save method
-        super(Base, self).save(*args, **kwargs)
+        # Run normal mongoengine delete method
+        super(Base, self).delete(*args, **kwargs)
 
     def to_dict(self, filters=[]):
         d = translate_bson_data_to_json_safe_data(self.to_mongo())
