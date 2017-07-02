@@ -51,7 +51,7 @@ def fingerprint(strict=False, expiry=(60 * 60), namespace="dhariri"):
     return decorator
 
 
-@cached(namespace="tokens")
+@cached(namespace="token")
 def _find_token(token_str):
     """
     Simple finder function which allows for more specific caching

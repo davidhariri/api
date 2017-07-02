@@ -130,7 +130,7 @@ class ArticlesEndpoint(Resource):
 
     @security()
     @paginate()
-    @cached(namespace="articles", expiry=60)
+    @cached(namespace="article", expiry=60)
     def get(self, authorized, limit, skip, order):
         """
         Endpoint for listing articles
@@ -158,7 +158,7 @@ class ArticleEndpoint(Resource):
     """
     @security()
     @_needs_article()
-    @cached(namespace="articles", expiry=60)
+    @cached(namespace="article", expiry=60)
     def get(self, article, authorized):
         """Retrieves an article by it's identifier"""
         if authorized:

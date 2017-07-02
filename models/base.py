@@ -1,5 +1,6 @@
 from mongoengine import Document
 from mongoengine.fields import DateTimeField
+from helpers.cache import invalidate as invalidate_cached
 
 from datetime import datetime
 from bson.objectid import ObjectId
@@ -59,6 +60,19 @@ class Base(Document):
     def save(self, *args, **kwargs):
         # Runs some tasks that always have to be run when saved
         self._was_updated()
+
+        # Invalidate cached objects
+        invalidate_cached(self._get_collection_name())
+
+        # Run normal mongoengine save method
+        super(Base, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        # Runs some tasks that always have to be run when saved
+        self._was_updated()
+
+        # Invalidate cached objects
+        invalidate_cached(self._get_collection_name())
 
         # Run normal mongoengine save method
         super(Base, self).save(*args, **kwargs)
