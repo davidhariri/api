@@ -29,7 +29,7 @@ MSG_INVALID_FIELD = "Sorry, one or more of your fields do not exist"
 MSG_DELETED = "Article '{title}' ({_id}) was deleted"
 MSG_INVALID_ACTION = "Sorry, '{}' is not a valid action"
 
-NON_PUBLIC_FIELDS = ["_id", "published", "shared", "share_slug"]
+NON_PUBLIC_FIELDS = ["published", "shared", "share_slug"]
 VALID_ACTIONS = {"read", "love"}
 
 # MARK - Private helpers
