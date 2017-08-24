@@ -10,27 +10,24 @@ Base objects are what all my objects inherit from. They just provide some conven
 #### Fields
 | Field | Description |
 | --- | --- |
-| `_id` | An ObjectId corresponding to the Article's document in the DB |
+| `_id` | An ObjectId corresponding to the Note's document in the DB |
 | `created` | A timestamp corresponding to the date the object was created
 | `updated` | A timestamp corresponding to the date the object was last updated
+| `location` | A list of lat, lon coordinates of where this object was created
 
-### Articles
-Articles are my writing. They contain long-form markdown about my thoughts.
+### Notes
+Notes are little thoughts. They contain markdown about my life.
 
 #### Fields
 | Field | Description |
 | --- | --- |
-| `title` | A string article title |
-| `content` | Markdown string with the content of the article |
-| `published` | Boolean field denoting wether this article has been published (public) |
-| `shared` | Boolean field denoting wether this article has been shared (private, link accesible with `share_handle`) |
-| `love_count` | Int field denoting the number of times this article has been loved |
-| `read_count` | Int field denoting the number of times this article has been read |
-| `share_handle` | A UUID token used for sharing an article before it's been `published` |
-| `slug` | A human-readable, unique, URL-safe string for more conveniently accessing a published article |
+| `text` | Markdown string with the content of the note |
+| `html` | html string of the text content |
+| `public` | Boolean field denoting whether this note has been published (public) |
+| `love_count` | Int field denoting the number of times this note has been loved |
+| `slug` | A token used for sharing a note |
 
 #### Endoints
-| Route | Method | Authenticated | Description |
-| --- | --- | --- | --- |
-| **/articles/** | `GET` | 🔑 | Lists all Articles with all fields |
-| **/articles/** | `GET` | None | Lists all `published` Articles with some [fields removed](/routes/articles.py#L50)  |
+| Route | Method | Description |
+| --- | --- | --- |
+| [**/notes/**](https://api.dhariri.com/notes/) | `GET` | Lists all public Notes |

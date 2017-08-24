@@ -1,5 +1,9 @@
 from mongoengine import Document
-from mongoengine.fields import DateTimeField
+from mongoengine.fields import (
+    DateTimeField,
+    PointField,
+    IntField
+)
 from helpers.cache import invalidate as invalidate_cached
 
 from datetime import datetime
@@ -38,6 +42,8 @@ class Base(Document):
     """
     created = DateTimeField(default=datetime.now)
     updated = DateTimeField(default=datetime.now)
+    location = PointField()
+    love_count = IntField(default=0)
 
     meta = {
         "abstract": True
@@ -66,6 +72,10 @@ class Base(Document):
 
         # Run normal mongoengine save method
         super(Base, self).save(*args, **kwargs)
+
+    def increment_love_count(self, factor=1):
+        # Increments the love counter when an object is loved
+        self.love_count += factor
 
     def delete(self, *args, **kwargs):
         # Runs some tasks that always have to be run when saved
