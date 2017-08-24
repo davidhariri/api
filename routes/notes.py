@@ -62,12 +62,7 @@ def _needs_note():
             id_or_slug = kwargs["id_or_slug"]
 
             query = _id_or_slug_to_query(id_or_slug)
-
-            if "id" in query:
-                notes = Note.objects(**query)
-            else:
-                _s = query["slug"]
-                notes = Note.objects(Q(slug=_s))
+            notes = Note.objects(**query)
 
             if len(notes) == 0:
                 return {"message": MSG_NOT_FOUND}, 404
@@ -149,9 +144,6 @@ class NoteEndpoint(Resource):
     @cached(namespace="note", expiry=60)
     def get(self, note, authorized):
         """Retrieves a note by it's identifier"""
-        if not authorized and not note.public:
-            return {"message": MSG_NOT_FOUND}, 404
-
         return note.to_dict(), 200
 
     @security(True)
