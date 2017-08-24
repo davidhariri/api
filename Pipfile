@@ -1,0 +1,16 @@
+[[source]]
+verify_ssl = true
+url = "https://pypi.python.org/simple"
+
+[packages]
+mongoengine = "*"
+nose = "*"
+python-slugify = "*"
+gunicorn = "*"
+redis = "*"
+tinys3 = "*"
+Flask-RESTful = "*"
+Flask = "*"
+Markdown = "*"
+Unidecode = "*"
+Flask-Cors = "*"

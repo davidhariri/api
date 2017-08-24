@@ -1,5 +1,9 @@
-config.py
+.env
 *.pyc
-images/**
-wsgi.py
-wsgi.ini
+trash
+__pycache__
+*.lock
+*.log
+*.rdb
+*.temp
+migration.py
