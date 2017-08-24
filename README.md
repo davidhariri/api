@@ -31,3 +31,4 @@ Notes are little thoughts. They contain markdown about my life.
 | Route | Method | Description |
 | --- | --- | --- |
 | [**/notes/**](https://api.dhariri.com/notes/) | `GET` | Lists all public Notes |
+| [**/notes/<note_id_or_slug>/**](https://api.dhariri.com/notes/599f3d98d9a23f00080fcd7f) | `GET` | Retrieve a single public or private note |
