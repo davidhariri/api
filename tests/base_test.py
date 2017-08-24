@@ -1,7 +1,7 @@
 import unittest
 from mongoengine import connect
 
-from models.article import Article
+from models.note import Note
 
 
 class BaseTest(unittest.TestCase):
@@ -17,12 +17,8 @@ class BaseTest(unittest.TestCase):
     def setUp(self):
         # Set up the database
         self.set_up_database()
-
-        self.simple_article = Article(
-            title="My New Article",
-            content="# Hello World 🏄")
-
-        self.simple_article.save()
+        self.test_note = Note(text="# Hello World! 🏄")
+        self.test_note.save()
 
     def tearDown(self):
         # Drop all collections
