@@ -12,6 +12,8 @@ from bson.objectid import ObjectId
 from uuid import UUID
 
 import json
+import os
+import requests
 
 
 def translate_bson_data_to_json_safe_data(bson_data):
@@ -58,8 +60,39 @@ class Base(Document):
         self.updated = datetime.now()
 
     def _fetch_friendly_location(self):
-        # FIXME: Google API Call here
-        self.location_friendly = "Toronto"
+        GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", None)
+
+        # Check to make sure we have a key
+        if GOOGLE_API_KEY is None:
+            return
+
+        # Check that this call is necessary
+        if self.location is None or self.location_friendly is not None:
+            return
+
+        loc_resp = requests.get(
+            "https://maps.googleapis.com/maps/api/geocode/json?"
+            "latlng={},{}&key={}".format(
+                self.location[0],
+                self.location[1],
+                GOOGLE_API_KEY
+            )
+        ).json()
+
+        # Check for valid results
+        if len(loc_resp["results"]) == 0:
+            return
+
+        address_comps = loc_resp["results"][0]["address_components"]
+        locality_comps = list(filter(
+            lambda ac: "locality" in ac["types"],
+            address_comps
+        ))
+
+        if len(locality_comps) == 0:
+            return
+
+        self.location_friendly = locality_comps[0]["long_name"]
 
     # MARK - Public methods
 
