@@ -97,6 +97,10 @@ class Base(Document):
                 if k in d:
                     del d[k]
 
+        # Special mapping for outputting coordinates in a simpler way
+        if "location" in d:
+            d["location"] = d["location"]["coordinates"]
+
         return d
 
     def to_json(self, filters=[]):
