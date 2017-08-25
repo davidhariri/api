@@ -69,20 +69,18 @@ class TestNote(BaseTest):
             7
         )
 
-    def test_empty_location(self):
-        """
-        Tests that a Note object can be created without a location
-        """
-        try:
-            test_note = Note()
-            test_note.save()
-        except Exception as e:
-            self.fail(e)
-
     def test_friendly_name_generation(self):
         """
         Tests that Notes that are given a valid location pair find
         a friendly location name
         """
-        test_note = Note(location=[43.666674, -79.333167])
-        self.assertEquals(test_note.location_friendly, "Toronto")
+        self.test_note = Note(location=[43.666674, -79.333167])
+        self.test_note.save()
+        self.assertEquals(self.test_note.location_friendly, "Toronto")
+
+    def test_friendly_name_generation_when_no_location(self):
+        """
+        Tests that Notes that are not given a friendly location string
+        when they have no location
+        """
+        self.assertEquals(self.test_note.location_friendly, None)

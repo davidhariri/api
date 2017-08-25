@@ -2,7 +2,8 @@ from mongoengine import Document
 from mongoengine.fields import (
     DateTimeField,
     PointField,
-    IntField
+    IntField,
+    StringField
 )
 from helpers.cache import invalidate as invalidate_cached
 
@@ -43,6 +44,7 @@ class Base(Document):
     created = DateTimeField(default=datetime.now)
     updated = DateTimeField(default=datetime.now)
     location = PointField()
+    location_friendly = StringField()
     love_count = IntField(default=0)
 
     meta = {
@@ -55,6 +57,10 @@ class Base(Document):
         # Changes the updated field to the current timestamp
         self.updated = datetime.now()
 
+    def _fetch_friendly_location(self):
+        # FIXME: Google API Call here
+        self.location_friendly = "Toronto"
+
     # MARK - Public methods
 
     def update_fields(self, updates):
@@ -66,6 +72,9 @@ class Base(Document):
     def save(self, *args, **kwargs):
         # Runs some tasks that always have to be run when saved
         self._was_updated()
+
+        if self.location is not None and self.location_friendly is None:
+            self._fetch_friendly_location()
 
         # Invalidate cached objects
         invalidate_cached(self._get_collection_name())
