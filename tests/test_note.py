@@ -1,5 +1,7 @@
 from base_test import BaseTest
 
+from models.note import Note
+
 
 class TestNote(BaseTest):
     def test_render_html(self):
@@ -66,3 +68,19 @@ class TestNote(BaseTest):
             len(self.test_note.slug),
             7
         )
+
+    def test_friendly_name_generation(self):
+        """
+        Tests that Notes that are given a valid location pair find
+        a friendly location name
+        """
+        self.test_note = Note(location=[43.666674, -79.333167])
+        self.test_note.save()
+        self.assertEquals(self.test_note.location_friendly, "Toronto")
+
+    def test_friendly_name_generation_when_no_location(self):
+        """
+        Tests that Notes that are not given a friendly location string
+        when they have no location
+        """
+        self.assertEquals(self.test_note.location_friendly, None)

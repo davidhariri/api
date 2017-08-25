@@ -2,7 +2,8 @@ from mongoengine import Document
 from mongoengine.fields import (
     DateTimeField,
     PointField,
-    IntField
+    IntField,
+    StringField
 )
 from helpers.cache import invalidate as invalidate_cached
 
@@ -11,6 +12,8 @@ from bson.objectid import ObjectId
 from uuid import UUID
 
 import json
+import os
+import requests
 
 
 def translate_bson_data_to_json_safe_data(bson_data):
@@ -43,6 +46,7 @@ class Base(Document):
     created = DateTimeField(default=datetime.now)
     updated = DateTimeField(default=datetime.now)
     location = PointField()
+    location_friendly = StringField()
     love_count = IntField(default=0)
 
     meta = {
@@ -55,6 +59,41 @@ class Base(Document):
         # Changes the updated field to the current timestamp
         self.updated = datetime.now()
 
+    def _fetch_friendly_location(self):
+        GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", None)
+
+        # Check to make sure we have a key
+        if GOOGLE_API_KEY is None:
+            return
+
+        # Check that this call is necessary
+        if self.location is None or self.location_friendly is not None:
+            return
+
+        loc_resp = requests.get(
+            "https://maps.googleapis.com/maps/api/geocode/json?"
+            "latlng={},{}&key={}".format(
+                self.location[0],
+                self.location[1],
+                GOOGLE_API_KEY
+            )
+        ).json()
+
+        # Check for valid results
+        if len(loc_resp["results"]) == 0:
+            return
+
+        address_comps = loc_resp["results"][0]["address_components"]
+        locality_comps = list(filter(
+            lambda ac: "locality" in ac["types"],
+            address_comps
+        ))
+
+        if len(locality_comps) == 0:
+            return
+
+        self.location_friendly = locality_comps[0]["long_name"]
+
     # MARK - Public methods
 
     def update_fields(self, updates):
@@ -66,6 +105,9 @@ class Base(Document):
     def save(self, *args, **kwargs):
         # Runs some tasks that always have to be run when saved
         self._was_updated()
+
+        if self.location is not None and self.location_friendly is None:
+            self._fetch_friendly_location()
 
         # Invalidate cached objects
         invalidate_cached(self._get_collection_name())
@@ -96,6 +138,10 @@ class Base(Document):
             for k in filtered_keys:
                 if k in d:
                     del d[k]
+
+        # Special mapping for outputting coordinates in a simpler way
+        if "location" in d:
+            d["location"] = d["location"]["coordinates"]
 
         return d
 
