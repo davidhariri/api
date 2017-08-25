@@ -78,3 +78,11 @@ class TestNote(BaseTest):
             test_note.save()
         except Exception as e:
             self.fail(e)
+
+    def test_friendly_name_generation(self):
+        """
+        Tests that Notes that are given a valid location pair find
+        a friendly location name
+        """
+        test_note = Note(location=[43.666674, -79.333167])
+        self.assertEquals(test_note.location_friendly, "Toronto")
