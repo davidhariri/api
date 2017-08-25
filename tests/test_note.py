@@ -1,5 +1,7 @@
 from base_test import BaseTest
 
+from models.note import Note
+
 
 class TestNote(BaseTest):
     def test_render_html(self):
@@ -66,3 +68,13 @@ class TestNote(BaseTest):
             len(self.test_note.slug),
             7
         )
+
+    def test_empty_location(self):
+        """
+        Tests that a Note object can be created without a location
+        """
+        try:
+            test_note = Note()
+            test_note.save()
+        except Exception as e:
+            self.fail(e)
