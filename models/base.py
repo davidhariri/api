@@ -146,6 +146,4 @@ class Base(Document):
         return d
 
     def to_json(self, filters=[]):
-        d = self.to_dict(filters=filters)
-        print(d)
-        return json.dumps(d)
+        return json.dumps(self.to_dict(filters=filters))
