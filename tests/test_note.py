@@ -78,6 +78,11 @@ class TestNote(BaseTest):
         self.test_note.save()
         self.assertEquals(self.test_note.location_friendly, "Toronto")
 
+    def test_making_note_with_topics(self):
+        self.test_note = Note(topics=["topic"])
+        self.test_note.save()
+        self.assertEquals(self.test_note.topics[0], "topic")
+
     def test_friendly_name_generation_when_no_location(self):
         """
         Tests that Notes that are not given a friendly location string

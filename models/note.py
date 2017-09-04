@@ -1,6 +1,7 @@
 from mongoengine.fields import (
     StringField,
-    BooleanField
+    BooleanField,
+    ListField
 )
 import re
 import random
@@ -36,9 +37,10 @@ class Note(Base):
         default=_random_string,
         min_length=7
     )
+    topics = ListField(field=StringField())
 
     meta = {
-        "indexes": ["slug", "public", "text"]
+        "indexes": ["slug", "public", "text", "topics"]
     }
 
     # MARK - Private methods
