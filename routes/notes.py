@@ -1,6 +1,6 @@
 from flask_restful import Resource
+from flask import request
 from bson.objectid import ObjectId
-from mongoengine.queryset.visitor import Q
 
 from mongoengine.errors import (
     ValidationError,
@@ -96,6 +96,15 @@ def _save_note(note, success_code=200, response_dict=None):
 
     return note.to_dict(), success_code
 
+
+def _has_topics():
+    def decorator(function):
+        def wrapper(*args, **kwargs):
+            kwargs["topics"] = request.args.getlist("topic")
+            return function(*args, **kwargs)
+        return wrapper
+    return decorator
+
 # MARK - Endpoint Resources
 
 
@@ -115,8 +124,9 @@ class NotesEndpoint(Resource):
 
     @security()
     @paginate()
+    @_has_topics()
     @cached(namespace="note", expiry=60)
-    def get(self, authorized, limit, skip, order):
+    def get(self, authorized, limit, skip, order, topics):
         """
         Endpoint for listing notes
         """
@@ -124,6 +134,9 @@ class NotesEndpoint(Resource):
 
         if not authorized:
             query = {"public": True}
+
+        if len(topics) > 0:
+            query["topics__in"] = topics
 
         notes = Note.objects(**query).order_by(order).skip(
             skip).limit(limit)
