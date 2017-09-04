@@ -79,9 +79,21 @@ class TestNote(BaseTest):
         self.assertEquals(self.test_note.location_friendly, "Toronto")
 
     def test_making_note_with_topics(self):
-        self.test_note = Note(topics=["topic"])
+        """
+        Tests that a Note can be made with topics
+        """
+        self.test_note = Note(topics=["topic", "topic2"])
         self.test_note.save()
         self.assertEquals(self.test_note.topics[0], "topic")
+
+    def test_topic_note_dictionary(self):
+        """
+        Tests that a Notes dictionary represenation renders correctly
+        """
+        self.test_note = Note(topics=["topic"])
+        self.test_note.save()
+        d = self.test_note.to_dict()
+        self.assertEquals(d["topics"], ["topic"])
 
     def test_friendly_name_generation_when_no_location(self):
         """
