@@ -9,9 +9,9 @@ from routes.images import ImagesEndpoint
 
 route_dict = {
     "/": RootEndpoint,
-    "/auth/": AuthEndpoint,
-    "/notes/": NotesEndpoint,
-    "/notes/<string:id_or_slug>/": NoteEndpoint,
-    "/notes/<string:id_or_slug>/<string:action>/": NoteActionsEndpoint,
-    "/images/": ImagesEndpoint
+    # "/auth/": AuthEndpoint,
+    # "/notes/": NotesEndpoint,
+    # "/notes/<string:id_or_slug>/": NoteEndpoint,
+    # "/notes/<string:id_or_slug>/<string:action>/": NoteActionsEndpoint,
+    # "/images/": ImagesEndpoint
 }

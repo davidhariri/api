@@ -1,9 +1,12 @@
 [[source]]
+url = 'https://pypi.python.org/simple'
 verify_ssl = true
-url = "https://pypi.python.org/simple"
+name = 'pypi'
+
+[requires]
+python_version = '3.7.1'
 
 [packages]
-mongoengine = "*"
 nose = "*"
 python-slugify = "*"
 gunicorn = "*"
@@ -14,3 +17,7 @@ Flask = "*"
 Markdown = "*"
 Unidecode = "*"
 Flask-Cors = "*"
+psycopg2 = "*"
+flask-sqlalchemy = "*"
+flask-migrate = "*"
+python-dotenv = "*"

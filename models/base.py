@@ -1,14 +1,9 @@
-from mongoengine import Document
-from mongoengine.fields import (
-    DateTimeField,
-    PointField,
-    IntField,
-    StringField
-)
+from app import db
+from sqlalchemy.dialects.postgresql import JSON
+
 from helpers.cache import invalidate as invalidate_cached
 
 from datetime import datetime
-from bson.objectid import ObjectId
 from uuid import UUID
 
 import json
@@ -16,30 +11,7 @@ import os
 import requests
 
 
-def translate_bson_data_to_json_safe_data(bson_data):
-    if isinstance(bson_data, ObjectId):
-        bson_data = str(bson_data)
-
-    elif isinstance(bson_data, datetime):
-        bson_data = float(bson_data.strftime("%s.%f"))
-
-    elif isinstance(bson_data, UUID):
-        bson_data = str(bson_data)
-
-    elif isinstance(bson_data, dict):
-        for key in bson_data:
-            bson_data[key] = translate_bson_data_to_json_safe_data(
-                bson_data[key])
-
-    elif isinstance(bson_data, list):
-        for index, value in enumerate(bson_data):
-            bson_data[index] = translate_bson_data_to_json_safe_data(
-                value)
-
-    return bson_data
-
-
-class Base(Document):
+class Base(db.Model):
     """
     Base Document for all model-level abstractions
     """

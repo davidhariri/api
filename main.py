@@ -1,7 +1,6 @@
 import os
 from flask import Flask
 from flask_restful import Api as API
-import mongoengine
 from flask_cors import CORS
 
 from routes import route_dict
@@ -10,11 +9,7 @@ from routes import route_dict
 app = Flask(__name__)
 CORS(app)
 
-# MARK - Setup Services
-mongoengine.connect(
-    host=os.environ.get("MONGODB_URI", "localhost:27017"),
-    db="dhariri"
-)
+db = SQLAlchemy(app)
 
 # Set up Flask-Restful API wrapper
 api = API(app)
@@ -25,4 +20,4 @@ for route, resource in route_dict.items():
 
 if __name__ == "__main__":
     # TODO: Make this an ENV var
-    app.run(debug=os.environ.get("DEBUG", True))
+    app.run()
