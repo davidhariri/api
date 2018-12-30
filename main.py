@@ -2,14 +2,19 @@ import os
 from flask import Flask
 from flask_restful import Api as API
 from flask_cors import CORS
+from helpers.db import db
 
 from routes import route_dict
 
 # MARK - Setup Flask app
 app = Flask(__name__)
+
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ["SQLALCHEMY_DATABASE_URI"]
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 CORS(app)
 
-db = SQLAlchemy(app)
+# Set up SQLAlchemy
+db.init_app(app)
 
 # Set up Flask-Restful API wrapper
 api = API(app)
