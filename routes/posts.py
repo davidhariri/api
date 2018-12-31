@@ -104,7 +104,7 @@ class PostsEndpoint(Resource):
     @json_input(ALLOWED_FIELDS)
     def post(self, authorized, fields):
         """
-        Endpoint for creating new Notes
+        Endpoint for creating new Posts
         """
         post = Post(**fields)
 
