@@ -1,121 +1,55 @@
-from app import db
-from sqlalchemy.dialects.postgresql import JSON
-
-from helpers.cache import invalidate as invalidate_cached
-
-from datetime import datetime
+from helpers.db import db
 from uuid import UUID
-
+from datetime import datetime
 import json
-import os
-import requests
 
+def translate_model_data_to_json_safe_data(pg_data):
+	if isinstance(pg_data, datetime):
+		pg_data = pg_data.isoformat()
+
+	elif isinstance(pg_data, UUID):
+		pg_data = str(pg_data)
+
+	elif isinstance(pg_data, dict):
+		for key in pg_data:
+			pg_data[key] = translate_model_data_to_json_safe_data(
+				pg_data[key])
+
+	elif isinstance(pg_data, list):
+		for index, value in enumerate(pg_data):
+			pg_data[index] = translate_model_data_to_json_safe_data(
+				value)
+
+	return pg_data
 
 class Base(db.Model):
-    """
-    Base Document for all model-level abstractions
-    """
-    created = DateTimeField(default=datetime.now)
-    updated = DateTimeField(default=datetime.now)
-    location = PointField()
-    location_friendly = StringField()
-    love_count = IntField(default=0)
+	"""
+	General abstractions for all models
+	"""
 
-    meta = {
-        "abstract": True
-    }
+	__abstract__ = True
 
-    # MARK - Private methods
+	id = db.Column(db.Integer, primary_key = True)
+	date_created= db.Column(db.DateTime, default=db.func.now())
+	date_updated = db.Column(db.DateTime, default=db.func.now(), onupdate=db.func.now())
 
-    def _was_updated(self):
-        # Changes the updated field to the current timestamp
-        self.updated = datetime.now()
+	def to_dict(self, filters=[]):
+		_d = {}
 
-    def _fetch_friendly_location(self):
-        GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", None)
+		for column in self.__table__.columns:
+			_d[column.name] = getattr(self, column.name)
 
-        # Check to make sure we have a key
-        if GOOGLE_API_KEY is None:
-            return
+		d = translate_model_data_to_json_safe_data(_d)
 
-        # Check that this call is necessary
-        if self.location is None or self.location_friendly is not None:
-            return
+		if len(filters) > 0:
+			filtered_keys = set(filters)
 
-        loc_resp = requests.get(
-            "https://maps.googleapis.com/maps/api/geocode/json?"
-            "latlng={},{}&key={}".format(
-                self.location[0],
-                self.location[1],
-                GOOGLE_API_KEY
-            )
-        ).json()
+			for k in filtered_keys:
+				if k in d:
+					del d[k]
 
-        # Check for valid results
-        if len(loc_resp["results"]) == 0:
-            return
+		return d
 
-        address_comps = loc_resp["results"][0]["address_components"]
-        locality_comps = list(filter(
-            lambda ac: "locality" in ac["types"],
-            address_comps
-        ))
+	def to_json(self, filters=[]):
+		return json.dumps(self.to_dict(filters=filters))
 
-        if len(locality_comps) == 0:
-            return
-
-        self.location_friendly = locality_comps[0]["long_name"]
-
-    # MARK - Public methods
-
-    def update_fields(self, updates):
-        # NOTE: Not the most safe function (Reference fields etc...)
-        for key, value in updates.items():
-            if key in self._fields.keys():
-                setattr(self, key, value)
-
-    def save(self, *args, **kwargs):
-        # Runs some tasks that always have to be run when saved
-        self._was_updated()
-
-        if self.location is not None and self.location_friendly is None:
-            self._fetch_friendly_location()
-
-        # Invalidate cached objects
-        invalidate_cached(self._get_collection_name())
-
-        # Run normal mongoengine save method
-        super(Base, self).save(*args, **kwargs)
-
-    def increment_love_count(self, factor=1):
-        # Increments the love counter when an object is loved
-        self.love_count += factor
-
-    def delete(self, *args, **kwargs):
-        # Runs some tasks that always have to be run when saved
-        self._was_updated()
-
-        # Invalidate cached objects
-        invalidate_cached(self._get_collection_name())
-
-        # Run normal mongoengine delete method
-        super(Base, self).delete(*args, **kwargs)
-
-    def to_dict(self, filters=[]):
-        d = translate_bson_data_to_json_safe_data(self.to_mongo())
-
-        if len(filters) > 0:
-            filtered_keys = set(filters)
-
-            for k in filtered_keys:
-                if k in d:
-                    del d[k]
-
-        # Special mapping for outputting coordinates in a simpler way
-        if "location" in d:
-            d["location"] = d["location"]["coordinates"]
-
-        return d
-
-    def to_json(self, filters=[]):
-        return json.dumps(self.to_dict(filters=filters))

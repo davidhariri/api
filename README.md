@@ -10,25 +10,32 @@ Base objects are what all my objects inherit from. They just provide some conven
 #### Fields
 | Field | Description |
 | --- | --- |
-| `_id` | An ObjectId corresponding to the Note's document in the DB |
+| `id` | An automatically incremented number that is unique to this record |
 | `created` | A timestamp corresponding to the date the object was created
 | `updated` | A timestamp corresponding to the date the object was last updated
-| `location` | A list of lat, lon coordinates of where this object was created
 
-### Notes
-Notes are little thoughts. They contain markdown about my life.
+### Posts
+Posts are little thoughts. They contain events in my life.
 
 #### Fields
 | Field | Description |
 | --- | --- |
-| `text` | Markdown string with the content of the note |
-| `html` | html string of the text content |
-| `public` | Boolean field denoting whether this note has been published (public) |
-| `love_count` | Int field denoting the number of times this note has been loved |
-| `slug` | A token used for sharing a note |
+| `slug` | A token used for sharing a post |
+| `comment` | A string explaining the event |
+| `public` | Boolean field denoting whether this post has been published publicly. If this is false, only knowing the slug will reveal the post |
+| `location_latitude` | The latitude of the post |
+| `location_longitude` | The longitude of the post |
+| `location_name` | The name of the location |
+| `review` | A review for the post out of 5 |
+| `link_name` | A name of an attached link |
+| `link_uri` | An attached link |
+| `love_count` | A field denoting the number of times this post has been loved |
+| `media` | A list of URLs with media attachments |
+| `topics` | A list of topics that this event pertains to |
+
 
 #### Endoints
 | Route | Method | Description |
 | --- | --- | --- |
-| [**/notes/**](https://api.dhariri.com/notes/) | `GET` | Lists all public Notes |
-| [**/notes/<note_id_or_slug>/**](https://api.dhariri.com/notes/599f3d98d9a23f00080fcd7f) | `GET` | Retrieve a single public or private note |
+| [**/posts/**](https://api.dhariri.com/posts/) | `GET` | Lists all public posts |
+| [**/posts/<post_slug_str>/**](https://api.dhariri.com/posts/xxxxxxx/) | `GET` | Retrieve a single public or private post |
