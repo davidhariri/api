@@ -56,10 +56,8 @@ def _find_token(token_str):
     """
     Simple finder function which allows for more specific caching
     """
-    token_matches = AuthToken.objects(token=token_str)
-
-    if len(token_matches):
-        return token_matches[0]
+    print(AuthToken.query)
+    return AuthToken.query.filter_by(token=token_str).first()
 
 
 def security(strict=False):

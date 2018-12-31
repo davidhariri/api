@@ -18,10 +18,8 @@ def json_input(allowed_fields=[], can_be_empty=False):
                     )
                 }, 400
 
-            if isinstance(allowed_fields, dict):
-                allowed_keys = set(allowed_fields.keys())
-
             input_keys = set(fields.keys())
+            allowed_keys = set(allowed_fields)
 
             for k in input_keys:
                 if k not in allowed_keys:

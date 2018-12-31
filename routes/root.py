@@ -8,12 +8,12 @@ class RootEndpoint(Resource):
             "documentation": "https://github.com/davidhariri/api/blob/master/README.md",
             "atlas": [
                 {
-                    "decription": "See all the public notes",
-                    "path": "/notes/"
+                    "decription": "See all the public posts",
+                    "path": "/posts/"
                 },
                 {
-                    "description": "See a single note (public or private)",
-                    "path": "/notes/<note_id_or_slug>/"
+                    "description": "See a single post (public or private)",
+                    "path": "/posts/<post_slug_str>/"
                 }
             ]
         }, 200

@@ -9,12 +9,10 @@ def paginate(d_limit=10, d_page=1):
         def wrapper(*args, **kwargs):
             l = int(request.args.get("size", d_limit))
             s = (int(request.args.get("page", d_page)) - 1) * l
-            o = request.args.get("order", "-created")
 
             kwargs.update({
                 "limit": l,
-                "skip": s,
-                "order": o
+                "skip": s
             })
 
             return function(*args, **kwargs)
