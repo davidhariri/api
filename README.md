@@ -32,6 +32,7 @@ Posts are little thoughts. They contain events in my life.
 | `love_count` | A field denoting the number of times this post has been loved |
 | `media` | A list of URLs with media attachments |
 | `topics` | A list of topics that this event pertains to |
+| `tweet_id` | The id of the corresponding Tweet |
 
 
 #### Endoints
