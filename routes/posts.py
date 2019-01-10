@@ -61,6 +61,7 @@ def _save_post(post, success_code=200):
         db.session.add(post)
         db.session.commit()
     except Exception as e:
+        print(e)
         return {
             "message": MSG_INVALID
         }, 400
@@ -123,7 +124,16 @@ class PostsEndpoint(Resource):
 
         # Tweet if public post
         if post.public:
-            tweet = post_post_as_tweet(post)
+            try:
+                tweet = post_post_as_tweet(post)
+            except:
+                # TODO: Capture in Sentry
+                return result
+
+            post.tweet_id = tweet.id_str
+
+            # Over-write result to new save of tweet_id
+            result = _save_post(post, 201)
 
         return result
 

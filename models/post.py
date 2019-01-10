@@ -42,6 +42,7 @@ class Post(Base):
 	love_count = db.Column(db.Integer, default=0)
 	media = db.Column(ARRAY(db.String, dimensions=1))
 	topics = db.Column(ARRAY(db.String, dimensions=1))
+	tweet_id = db.Column(db.String)
 
 	def _fetch_friendly_location(self):
 		GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", None)
