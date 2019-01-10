@@ -10,8 +10,10 @@ from helpers.auth import (
 )
 from helpers.io import json_input
 from helpers.paging import paginate
+from helpers.twitter import post_post_as_tweet
 from helpers.cache import cached
 from sqlalchemy import desc
+import twitter
 
 # MARK - Constants
 
@@ -59,6 +61,7 @@ def _save_post(post, success_code=200):
         db.session.add(post)
         db.session.commit()
     except Exception as e:
+        print(e)
         return {
             "message": MSG_INVALID
         }, 400
@@ -112,7 +115,27 @@ class PostsEndpoint(Resource):
         if post.location_lon is not None and post.location_lat is not None and post.location_name is None:
             post._fetch_friendly_location()
 
-        return _save_post(post, 201)
+        # Save post
+        result = _save_post(post, 201)
+
+        # Check if the post was saved OK
+        if result[1] != 201:
+            return result
+
+        # Tweet if public post
+        if post.public:
+            try:
+                tweet = post_post_as_tweet(post)
+            except:
+                # TODO: Capture in Sentry
+                return result
+
+            post.tweet_id = tweet.id_str
+
+            # Over-write result to new save of tweet_id
+            result = _save_post(post, 201)
+
+        return result
 
     @security()
     @paginate()
