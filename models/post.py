@@ -66,8 +66,6 @@ class Post(Base):
 		# Check for valid results
 		if len(loc_resp["results"]) == 0:
 			return
-
-		print(loc_resp["results"][0])
 		
 		address_comps = loc_resp["results"][0]["address_components"]
 		locality_comps = list(filter(
