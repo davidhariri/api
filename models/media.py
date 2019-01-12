@@ -27,6 +27,11 @@ MOVING_MEDIA_TYPES = set([MediaType.GIF, MediaType.MP4])
 OPTIMAL_CANVAS_SIZE = 896, 896
 OPTIMAL_QUALITY = 80
 
+EXIF_NAME_MAPS = {
+    "LEICA Q (Typ 116)": "Q",
+    "LEICA CAMERA AG": "Leica"
+}
+
 
 class Media(Base):
     """
@@ -50,10 +55,6 @@ class Media(Base):
     camera_make = db.Column(db.String)
     camera_model = db.Column(db.String)
     average_color = db.Column(db.String)
-    gps_latitude = db.Column(db.Float)
-    gps_longitude = db.Column(db.Float)
-    gps_altitude = db.Column(db.Float)
-    gps_speed = db.Column(db.Float)
 
     def __init__(self, file):
         self.file = file
@@ -69,7 +70,34 @@ class Media(Base):
         self.uuid = uuid.uuid4()
 
     def set_exif(self):
-        # TODO: Set EXIF fields
+        image = Image.open(self.file)
+
+        exif = {
+            ExifTags.TAGS[k]: v
+            for k, v in image._getexif().items()
+            if k in ExifTags.TAGS
+        }
+
+        exposure = exif.get("ExposureTime", None)
+
+        if exposure is not None:
+            self.shot_exposure = "{}/{}".format(exposure[0], exposure[1])
+
+        aperture = exif.get("FNumber", None)
+
+        if aperture is not None:
+            self.shot_aperture = "ƒ{}".format(round(aperture[0] / aperture[1], 1))
+
+        self.shot_speed = exif.get("ISOSpeedRatings", None)
+
+        self.shot_focal_length = str(exif.get("FocalLengthIn35mmFilm", None)) + "mm"
+
+        self.camera_make = exif.get("Make", None)
+        self.camera_model = exif.get("Model", None)
+
+        self.camera_make = EXIF_NAME_MAPS.get(self.camera_make, self.camera_make)
+        self.camera_model = EXIF_NAME_MAPS.get(self.camera_model, self.camera_model)
+
         pass
 
     def set_info(self):
