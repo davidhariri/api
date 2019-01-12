@@ -72,11 +72,14 @@ class Media(Base):
     def set_exif(self):
         image = Image.open(self.file)
 
-        exif = {
-            ExifTags.TAGS[k]: v
-            for k, v in image._getexif().items()
-            if k in ExifTags.TAGS
-        }
+        try:
+            exif = {
+                ExifTags.TAGS[k]: v
+                for k, v in image._getexif().items()
+                if k in ExifTags.TAGS
+            }
+        except Exception:
+            return
 
         exposure = exif.get("ExposureTime", None)
 
