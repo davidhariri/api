@@ -1,7 +1,9 @@
 from helpers.db import db
 from uuid import UUID
+from enum import Enum
 from datetime import datetime
 import json
+
 
 def translate_model_data_to_json_safe_data(pg_data):
 	if isinstance(pg_data, datetime):
@@ -9,6 +11,9 @@ def translate_model_data_to_json_safe_data(pg_data):
 
 	elif isinstance(pg_data, UUID):
 		pg_data = str(pg_data)
+
+	elif isinstance(pg_data, Enum):
+		pg_data = pg_data.value
 
 	elif isinstance(pg_data, dict):
 		for key in pg_data:
@@ -22,6 +27,7 @@ def translate_model_data_to_json_safe_data(pg_data):
 
 	return pg_data
 
+
 class Base(db.Model):
 	"""
 	General abstractions for all models
@@ -29,8 +35,8 @@ class Base(db.Model):
 
 	__abstract__ = True
 
-	id = db.Column(db.Integer, primary_key = True)
-	date_created= db.Column(db.DateTime, default=db.func.now())
+	id = db.Column(db.Integer, primary_key=True)
+	date_created = db.Column(db.DateTime, default=db.func.now())
 	date_updated = db.Column(db.DateTime, default=db.func.now(), onupdate=db.func.now())
 
 	def to_dict(self, filters=[]):
@@ -52,4 +58,3 @@ class Base(db.Model):
 
 	def to_json(self, filters=[]):
 		return json.dumps(self.to_dict(filters=filters))
-

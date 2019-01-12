@@ -1,19 +1,12 @@
 from flask_restful import Resource
 from flask import request
-import tinys3
-import os
-import uuid
+from helpers.db import db
+from models.media import Media, InvalidMediaTypeException
+from helpers.s3 import upload
 from helpers.auth import security
+import os
 
-_ALLOWED_TYPES = set([
-    "image/png",
-    "image/jpg",
-    "image/jpeg",
-    "image/svg",
-    "image/svg+xml",
-    "image/gif"
-])
-_MSG_BAD_FORMAT = "Sorry, '{}' is not a supported format"
+CDN_URI = "https://static.dhariri.com/images/{}"
 
 
 class ImagesEndpoint(Resource):
@@ -23,28 +16,27 @@ class ImagesEndpoint(Resource):
     @security(True)
     def post(self, **kwargs):
         """Base endpoint"""
-        bucket = tinys3.Connection(
-            os.getenv("S3_ACCESS_KEY"),
-            os.getenv("S3_SECRET_KEY"),
-            tls=True)
-
         file = request.files["file"]
-        file_extension = file.filename.split(".")[-1]
-        file_name = "{}.{}".format(uuid.uuid4(), file_extension)
 
-        if file.content_type not in _ALLOWED_TYPES:
+        try:
+            media = Media(file=file)
+        except InvalidMediaTypeException as e:
             return {
-                "message": _MSG_BAD_FORMAT.format(file_extension)
+                "message": str(e)
             }, 400
 
-        bucket.upload(
-            ("images/" + file_name),
-            file,
-            os.getenv("S3_BUCKET_NAME")
-        )
+        optimized_file_names = media.optimize()
 
-        return {
-            "url": "https://static.dhariri.com/images/{}".format(
-                file_name
-            )
-        }, 200
+        for file_name in optimized_file_names:
+            upload(file_name)
+            os.remove(file_name)
+
+        media.url_raw = CDN_URI.format(optimized_file_names[0])
+        media.url_optimized = CDN_URI.format(optimized_file_names[1])
+
+        # TODO: Pull showcase bool from url arguments
+        # TODO: try/except
+        db.session.add(media)
+        db.session.commit()
+
+        return media.to_dict(), 200
