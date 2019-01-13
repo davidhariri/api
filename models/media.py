@@ -40,8 +40,8 @@ EXIF_NAME_MAPS = {
     "LEICA CAMERA AG": "Leica"
 }
 
-# filename format: <ASPECT>.<COLOR>.<UUID><".thumb"?>.<FMT>
-IMAGE_NAME = "{}.{}.{}{}.{}"
+# filename format: <ASPECT>_<COLOR>_<UUID><".thumb"?>.<FMT>
+IMAGE_NAME = "{}_{}_{}{}.{}"
 
 
 class Media(Base):
@@ -198,8 +198,6 @@ class Media(Base):
         self.media_type = MediaType.JPEG
         self.set_average_color(image_thumb)
         file_names = self.make_file_names()
-
-        print(file_names)
 
         image.save(
             file_names[0],
