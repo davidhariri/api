@@ -4,6 +4,7 @@ import uuid
 from models.base import Base
 from enum import Enum
 from PIL import Image, ExifTags
+from colorthief import ColorThief
 
 
 class InvalidMediaTypeException(Exception):
@@ -21,16 +22,26 @@ class MediaType(Enum):
         return self.value.split("/")[1]
 
 
+# Overrides init of ColorThief to pass in the buffer from memory
+class ColorThiefFromImage(ColorThief):
+    def __init__(self, image):
+        self.image = image
+
+
 STATIC_MEDIA_TYPES = set([MediaType.PNG, MediaType.JPG, MediaType.JPEG])
 MOVING_MEDIA_TYPES = set([MediaType.GIF, MediaType.MP4])
 
 OPTIMAL_CANVAS_SIZE = 896, 896
 OPTIMAL_QUALITY = 80
+DEFAULT_AVG_COLOR = "#eff1f3"
 
 EXIF_NAME_MAPS = {
     "LEICA Q (Typ 116)": "Q",
     "LEICA CAMERA AG": "Leica"
 }
+
+# filename format: <ASPECT>+<COLOR>+<UUID><THUMB?>.<FMT>
+IMAGE_NAME = "{}+{}+{}{}.{}"
 
 
 class Media(Base):
@@ -62,7 +73,7 @@ class Media(Base):
         # Try to cast the file_type as a MediaType
         try:
             self.media_type = MediaType(file.content_type)
-        except KeyError:
+        except Exception:
             raise InvalidMediaTypeException(
                 "Sorry '{}' is not a supported format".format(
                     file.content_type))
@@ -122,6 +133,36 @@ class Media(Base):
         else:
             return self.optimize_moving()
 
+    def set_average_color(self, image):
+
+        def rgb_to_hex(rgb):
+            return '#%02x%02x%02x' % rgb
+
+        try:
+            color_thief = ColorThiefFromImage(image)
+            avg_color = rgb_to_hex(color_thief.get_color(quality=1))
+        except Exception:
+            self.average_color = DEFAULT_AVG_COLOR
+
+            return DEFAULT_AVG_COLOR
+
+        self.average_color = avg_color
+
+        return avg_color
+
+    def make_file_names(self):
+        names = []
+
+        for i in range(2):
+            names.append(IMAGE_NAME.format(
+                self.aspect,
+                self.average_color,
+                self.uuid,
+                "" if i is 0 else ".thumb",
+                self.media_type.ext()))
+
+        return names
+
     def optimize_static(self):
         # Cast as PIL Image
         image = Image.open(self.file)
@@ -155,16 +196,16 @@ class Media(Base):
         image_thumb.thumbnail(OPTIMAL_CANVAS_SIZE, Image.ANTIALIAS)
 
         self.media_type = MediaType.JPEG
+        self.set_average_color(image_thumb)
+        file_names = self.make_file_names()
 
-        image_thumb_name = str(self.uuid) + ".thumb." + self.media_type.ext()
+        image.save(
+            file_names[0],
+            format=self.media_type.name)
+
         image_thumb.save(
-            image_thumb_name,
+            file_names[1],
             quality=OPTIMAL_QUALITY,
             format=self.media_type.name)
 
-        image_name = str(self.uuid) + "." + self.media_type.ext()
-        image.save(
-            image_name,
-            format=self.media_type.name)
-
-        return [image_name, image_thumb_name]
+        return file_names

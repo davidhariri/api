@@ -11,7 +11,7 @@ CDN_URI = "https://static.dhariri.com/images/{}"
 
 class ImagesEndpoint(Resource):
     """
-    Routes defined for manipluating images (for blog posts etc..)
+    Routes defined for uploading images to the CDN
     """
     @security(True)
     def post(self, **kwargs):
