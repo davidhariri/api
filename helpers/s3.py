@@ -12,7 +12,7 @@ def upload(file_name):
     file = open(file_name, 'rb')
 
     bucket.upload(
-        ("images/" + file_name),
+        ("media/" + file_name),
         file,
         os.getenv("S3_BUCKET_NAME")
     )

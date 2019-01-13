@@ -6,10 +6,10 @@ from helpers.s3 import upload
 from helpers.auth import security
 import os
 
-CDN_URI = "https://static.dhariri.com/images/{}"
+CDN_URI = "https://static.dhariri.com/media/{}"
 
 
-class ImagesEndpoint(Resource):
+class MediaEndpoint(Resource):
     """
     Routes defined for uploading images to the CDN
     """
