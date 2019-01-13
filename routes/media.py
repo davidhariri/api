@@ -29,7 +29,7 @@ class MediaEndpoint(Resource):
 
         for file_name in optimized_file_names:
             upload(file_name)
-            # os.remove(file_name)
+            os.remove(file_name)
 
         media.url = CDN_URI.format(optimized_file_names[0])
         media.url_optimized = CDN_URI.format(optimized_file_names[1])
