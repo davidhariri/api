@@ -29,13 +29,16 @@ class MediaEndpoint(Resource):
 
         for file_name in optimized_file_names:
             upload(file_name)
-            os.remove(file_name)
+            # os.remove(file_name)
 
-        media.url_raw = CDN_URI.format(optimized_file_names[0])
+        media.url = CDN_URI.format(optimized_file_names[0])
         media.url_optimized = CDN_URI.format(optimized_file_names[1])
+
+        if len(optimized_file_names) is 3:
+            media.url_poster = CDN_URI.format(optimized_file_names[2])
+
         media.showcase = request.args.get("showcase") is not None
 
-        # TODO: Pull showcase bool from url arguments
         # TODO: try/except
         db.session.add(media)
         db.session.commit()

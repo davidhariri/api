@@ -5,21 +5,12 @@ from models.base import Base
 from enum import Enum
 from PIL import Image, ExifTags
 from colorthief import ColorThief
+import moviepy.editor as mp
+import os
 
 
 class InvalidMediaTypeException(Exception):
     pass
-
-
-class MediaType(Enum):
-    PNG = "image/png"
-    JPG = "image/jpg"
-    JPEG = "image/jpeg"
-    GIF = "image/gif"  # Gets converted to MP4
-    MP4 = "video/mp4"
-
-    def ext(self):
-        return self.value.split("/")[1]
 
 
 # Overrides init of ColorThief to pass in the buffer from memory
@@ -28,8 +19,17 @@ class ColorThiefFromImage(ColorThief):
         self.image = image
 
 
+class MediaType(Enum):
+    PNG = "image/png"
+    JPG = "image/jpg"
+    JPEG = "image/jpeg"
+    GIF = "image/gif"
+
+    def ext(self):
+        return self.value.split("/")[1]
+
+
 STATIC_MEDIA_TYPES = set([MediaType.PNG, MediaType.JPG, MediaType.JPEG])
-MOVING_MEDIA_TYPES = set([MediaType.GIF, MediaType.MP4])
 
 OPTIMAL_CANVAS_SIZE = 896, 896
 OPTIMAL_QUALITY = 80
@@ -41,7 +41,7 @@ EXIF_NAME_MAPS = {
 }
 
 # filename format: <ASPECT>_<COLOR>_<UUID><".thumb"?>.<FMT>
-IMAGE_NAME = "{}_{}_{}{}.{}"
+MEDIA_NAME = "{}_{}_{}{}.{}"
 
 
 class Media(Base):
@@ -53,8 +53,9 @@ class Media(Base):
 
     uuid = db.Column(UUID(as_uuid=True), unique=True, nullable=False)
     media_type = db.Column(db.Enum(MediaType), nullable=False)
-    url_raw = db.Column(db.String, nullable=False)
+    url = db.Column(db.String, nullable=False)
     url_optimized = db.Column(db.String, nullable=False)
+    url_poster = db.Column(db.String)
     showcase = db.Column(db.Boolean, default=False, nullable=False)
     width = db.Column(db.Integer, nullable=False)
     height = db.Column(db.Integer, nullable=False)
@@ -114,7 +115,7 @@ class Media(Base):
 
         pass
 
-    def set_info(self):
+    def set_static_info(self):
         image = Image.open(self.file)
 
         self.width = image.width
@@ -124,14 +125,16 @@ class Media(Base):
 
     def optimize(self):
         if self.media_type in STATIC_MEDIA_TYPES:
-            self.set_info()
+            self.set_static_info()
             self.set_exif()
 
-            optimized_file_names = self.optimize_static()
+            return self.optimize_static()
 
-            return optimized_file_names
+        elif self.media_type is MediaType.GIF:
+            return self.optimize_gif()
+
         else:
-            return self.optimize_moving()
+            raise Exception("Called optimize on media that cannot be optimized")
 
     def set_average_color(self, image):
 
@@ -150,25 +153,62 @@ class Media(Base):
 
         return avg_color
 
-    def make_file_names(self):
-        names = []
+    def optimize_gif(self):
+        # Save GIF to FS
+        raw_gif_file_name = str(self.uuid) + "." + self.media_type.ext()
+        self.file.save(raw_gif_file_name)
 
-        for i in [0, 1]:
-            names.append(IMAGE_NAME.format(
-                self.aspect,
-                self.average_color,
-                self.uuid,
-                "" if i is 0 else ".thumb",
-                self.media_type.ext()))
+        # Cast GIF to Clip
+        clip = mp.VideoFileClip(raw_gif_file_name)
 
-        return names
+        temp_poster_file_name = str(self.uuid) + ".poster.jpeg"
+        clip.save_frame(temp_poster_file_name, t=0)
+        poster = Image.open(temp_poster_file_name)
+
+        self.set_average_color(poster)
+
+        self.width = clip.w
+        self.height = clip.h
+        self.aspect = round(self.width / self.height, 2)
+
+        # Save optimized MP4 clip
+        clip = clip.resize(width=OPTIMAL_CANVAS_SIZE[0])
+
+        optimized_mp4_filename = MEDIA_NAME.format(
+            self.aspect,
+            self.average_color,
+            self.uuid,
+            ".thumb",
+            "mp4")
+
+        clip.write_videofile(optimized_mp4_filename, codec="mpeg4", bitrate="3000k", progress_bar=False, verbose=False)
+
+        gif_file_name = MEDIA_NAME.format(
+            self.aspect,
+            self.average_color,
+            self.uuid,
+            "",
+            self.media_type.ext())
+
+        os.rename(raw_gif_file_name, gif_file_name)
+
+        # Make poster
+        poster_jpeg_file_name = MEDIA_NAME.format(
+            self.aspect,
+            self.average_color,
+            self.uuid,
+            ".poster",
+            "jpeg")
+
+        os.rename(temp_poster_file_name, poster_jpeg_file_name)
+
+        return [gif_file_name, optimized_mp4_filename, poster_jpeg_file_name]
 
     def optimize_static(self):
         # Cast as PIL Image
         image = Image.open(self.file)
 
         # Rotate based on EXIF data
-        # TODO: re-write this code? Was copied from a SO answer.
         try:
             for orientation in ExifTags.TAGS.keys():
                 if ExifTags.TAGS[orientation] == 'Orientation':
@@ -195,17 +235,29 @@ class Media(Base):
         image_thumb = image.copy()
         image_thumb.thumbnail(OPTIMAL_CANVAS_SIZE, Image.ANTIALIAS)
 
-        self.media_type = MediaType.JPEG
         self.set_average_color(image_thumb)
-        file_names = self.make_file_names()
+
+        raw_image_file_name = MEDIA_NAME.format(
+            self.aspect,
+            self.average_color,
+            self.uuid,
+            "",
+            self.media_type.ext())
 
         image.save(
-            file_names[0],
+            raw_image_file_name,
             format=self.media_type.name)
 
+        optimized_image_file_name = MEDIA_NAME.format(
+            self.aspect,
+            self.average_color,
+            self.uuid,
+            ".thumb",
+            "jpeg")
+
         image_thumb.save(
-            file_names[1],
+            optimized_image_file_name,
             quality=OPTIMAL_QUALITY,
             format=self.media_type.name)
 
-        return file_names
+        return [raw_image_file_name, optimized_image_file_name]
