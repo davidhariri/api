@@ -33,6 +33,7 @@ class ImagesEndpoint(Resource):
 
         media.url_raw = CDN_URI.format(optimized_file_names[0])
         media.url_optimized = CDN_URI.format(optimized_file_names[1])
+        media.showcase = request.args.get("showcase") is not None
 
         # TODO: Pull showcase bool from url arguments
         # TODO: try/except
