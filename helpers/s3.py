@@ -1,6 +1,10 @@
 import tinys3
 import os
-import io
+
+
+def file_size(fname):
+    statinfo = os.stat(fname)
+    return statinfo.st_size
 
 
 def upload(file_name):
@@ -9,7 +13,7 @@ def upload(file_name):
         os.getenv("S3_SECRET_KEY"),
         tls=True)
 
-    file = open(file_name, 'rb')
+    file = open(file_name, "rb")
 
     bucket.upload(
         ("media/" + file_name),

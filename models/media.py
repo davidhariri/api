@@ -40,8 +40,8 @@ EXIF_NAME_MAPS = {
     "LEICA CAMERA AG": "Leica"
 }
 
-# filename format: <ASPECT>+<COLOR>+<UUID><THUMB?>.<FMT>
-IMAGE_NAME = "{}+{}+{}{}.{}"
+# filename format: <ASPECT>.<COLOR>.<UUID><".thumb"?>.<FMT>
+IMAGE_NAME = "{}.{}.{}{}.{}"
 
 
 class Media(Base):
@@ -136,7 +136,7 @@ class Media(Base):
     def set_average_color(self, image):
 
         def rgb_to_hex(rgb):
-            return '#%02x%02x%02x' % rgb
+            return '%02x%02x%02x' % rgb
 
         try:
             color_thief = ColorThiefFromImage(image)
@@ -153,7 +153,7 @@ class Media(Base):
     def make_file_names(self):
         names = []
 
-        for i in range(2):
+        for i in [0, 1]:
             names.append(IMAGE_NAME.format(
                 self.aspect,
                 self.average_color,
@@ -198,6 +198,8 @@ class Media(Base):
         self.media_type = MediaType.JPEG
         self.set_average_color(image_thumb)
         file_names = self.make_file_names()
+
+        print(file_names)
 
         image.save(
             file_names[0],

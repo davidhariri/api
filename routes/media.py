@@ -40,4 +40,4 @@ class MediaEndpoint(Resource):
         db.session.add(media)
         db.session.commit()
 
-        return media.to_dict(), 200
+        return media.to_dict(), 201
