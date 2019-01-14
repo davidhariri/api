@@ -172,8 +172,6 @@ class Media(Base):
         self.aspect = round(self.width / self.height, 2)
 
         # Save optimized MP4 clip
-        clip = clip.resize(width=OPTIMAL_CANVAS_SIZE[0])
-
         optimized_mp4_filename = MEDIA_NAME.format(
             self.aspect,
             self.average_color,
@@ -181,7 +179,13 @@ class Media(Base):
             ".thumb",
             "mp4")
 
-        clip.write_videofile(optimized_mp4_filename, codec="mpeg4", bitrate="3000k", progress_bar=False, verbose=False)
+        clip.write_videofile(
+            optimized_mp4_filename,
+            codec="libx264",
+            bitrate="3000k",
+            progress_bar=False,
+            verbose=False,
+            ffmpeg_params=["-movflags", "faststart", "-pix_fmt", "yuv420p", "-vf", "scale=896:-2"])
 
         gif_file_name = MEDIA_NAME.format(
             self.aspect,

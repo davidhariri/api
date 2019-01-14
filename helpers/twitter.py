@@ -12,10 +12,6 @@ twitter_api = twitter.Api(consumer_key=os.getenv("TWITTER_KEY"),
 def post_post_as_tweet(post):
 	"""
 	Takes a post and formats it as a tweet, then sends the tweet to Twitter
-
-	TODO:
-	2. Log id to database against Post object
-
 	"""
 	status = ""
 	post_url = URL_STR.format(post.slug)
