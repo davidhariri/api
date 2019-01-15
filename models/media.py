@@ -230,7 +230,7 @@ class Media(Base):
         except (AttributeError, KeyError, IndexError):
             pass
 
-        # Convert to JPG and reduce quality
+        # Convert to JPG
         image = image.convert('RGB')
 
         # Generate smaller thumbnail
