@@ -2,9 +2,16 @@ import os
 from flask import Flask
 from flask_restful import Api as API
 from flask_cors import CORS
-from helpers.db import db
+import sentry_sdk
+from sentry_sdk.integrations.flask import FlaskIntegration
 
+from helpers.db import db
 from routes import route_dict
+
+# Set up Sentry
+sentry_sdk.init(
+    dsn=os.environ["SENTRY_DSN"],
+    integrations=[FlaskIntegration()])
 
 # MARK - Setup Flask app
 app = Flask(__name__)
@@ -24,5 +31,4 @@ for route, resource in route_dict.items():
     api.add_resource(resource, route)
 
 if __name__ == "__main__":
-    # TODO: Make this an ENV var
     app.run()

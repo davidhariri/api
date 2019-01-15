@@ -150,10 +150,6 @@ class PostsEndpoint(Resource):
         if not authorized:
             query = {"public": True}
 
-        # TODO:
-        # if len(topics) > 0:
-        #     query["topics__in"] = topics
-
         posts = Post.query.filter_by(**query).order_by(desc(Post.date_created)).offset(skip).limit(limit)
 
         return {

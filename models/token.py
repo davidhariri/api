@@ -7,8 +7,6 @@ from models.base import Base
 class AuthToken(Base):
 	"""
 	Authorization tokens
-
-	TODO: Index on token
 	"""
 	__tablename__ = "tokens"
 

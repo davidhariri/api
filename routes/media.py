@@ -1,5 +1,6 @@
 from flask_restful import Resource
 from flask import request
+from sentry_sdk import capture_exception
 from helpers.db import db
 from models.media import Media, InvalidMediaTypeException
 from helpers.s3 import upload
@@ -39,8 +40,13 @@ class MediaEndpoint(Resource):
 
         media.showcase = request.args.get("showcase") is not None
 
-        # TODO: try/except
-        db.session.add(media)
-        db.session.commit()
+        try:
+            db.session.add(media)
+            db.session.commit()
+        except Exception as e:
+            capture_exception(e)
+            return {
+                "message": "An unexpected error occoured while writing to the database"
+            }, 400
 
         return media.to_dict(), 201
