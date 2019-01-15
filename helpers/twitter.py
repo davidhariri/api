@@ -1,5 +1,6 @@
 import os
 import twitter
+from sentry_sdk import capture_exception
 
 CHAR_LIMIT = 246
 URL_STR = "life.dhariri.com/posts/{}"
@@ -12,10 +13,6 @@ twitter_api = twitter.Api(consumer_key=os.getenv("TWITTER_KEY"),
 def post_post_as_tweet(post):
 	"""
 	Takes a post and formats it as a tweet, then sends the tweet to Twitter
-
-	TODO:
-	2. Log id to database against Post object
-
 	"""
 	status = ""
 	post_url = URL_STR.format(post.slug)
@@ -34,9 +31,10 @@ def post_post_as_tweet(post):
 
 	if post.media:
 		try:
-			# Will fail if too big
 			return twitter_api.PostUpdate(status, media=post.media[:4])
-		except:
+		except Exception as e:
+			capture_exception(e)
+			
 			return twitter_api.PostUpdate(status)
 
 	return twitter_api.PostUpdate(status)

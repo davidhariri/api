@@ -13,7 +13,7 @@ from helpers.paging import paginate
 from helpers.twitter import post_post_as_tweet
 from helpers.cache import cached
 from sqlalchemy import desc
-import twitter
+
 
 # MARK - Constants
 
@@ -99,6 +99,7 @@ ALLOWED_FIELDS = [
     "topics"
 ]
 
+
 class PostsEndpoint(Resource):
     """
     Routes defined for manipluating Post objects
@@ -126,8 +127,7 @@ class PostsEndpoint(Resource):
         if post.public:
             try:
                 tweet = post_post_as_tweet(post)
-            except:
-                # TODO: Capture in Sentry
+            except Exception as e:
                 return result
 
             post.tweet_id = tweet.id_str
@@ -149,10 +149,6 @@ class PostsEndpoint(Resource):
 
         if not authorized:
             query = {"public": True}
-
-        # TODO:
-        # if len(topics) > 0:
-        #     query["topics__in"] = topics
 
         posts = Post.query.filter_by(**query).order_by(desc(Post.date_created)).offset(skip).limit(limit)
 

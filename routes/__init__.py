@@ -5,7 +5,7 @@ from routes.posts import (
 )
 from routes.root import RootEndpoint
 from routes.auth import AuthEndpoint
-from routes.images import ImagesEndpoint
+from routes.media import MediaEndpoint
 
 # Exported dictionary which matches paths to routes for cleaner code organization
 
@@ -15,5 +15,5 @@ route_dict = {
     "/posts/": PostsEndpoint,
     "/posts/<string:slug_str>/": PostEndpoint,
     "/posts/<string:slug_str>/<string:action>/": PostActionsEndpoint,
-    "/images/": ImagesEndpoint
+    "/media/": MediaEndpoint
 }
