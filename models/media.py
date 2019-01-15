@@ -6,6 +6,7 @@ from enum import Enum
 from PIL import Image, ExifTags
 from colorthief import ColorThief
 import moviepy.editor as mp
+import copy
 import os
 
 
@@ -81,9 +82,7 @@ class Media(Base):
 
         self.uuid = uuid.uuid4()
 
-    def set_exif(self):
-        image = Image.open(self.file)
-
+    def set_exif(self, image):
         try:
             exif = {
                 ExifTags.TAGS[k]: v
@@ -110,14 +109,13 @@ class Media(Base):
         self.camera_make = exif.get("Make", None)
         self.camera_model = exif.get("Model", None)
 
+        # Maps manufacturer names to friendlier names
         self.camera_make = EXIF_NAME_MAPS.get(self.camera_make, self.camera_make)
         self.camera_model = EXIF_NAME_MAPS.get(self.camera_model, self.camera_model)
 
         pass
 
-    def set_static_info(self):
-        image = Image.open(self.file)
-
+    def set_static_info(self, image):
         self.width = image.width
         self.height = image.height
 
@@ -125,13 +123,19 @@ class Media(Base):
 
     def optimize(self):
         if self.media_type in STATIC_MEDIA_TYPES:
-            self.set_static_info()
-            self.set_exif()
+            image = Image.open(self.file)
 
-            return self.optimize_static()
+            self.set_static_info(image)
+            self.set_exif(image)
+
+            file_names = self.optimize_static(image)
+
+            return file_names
 
         elif self.media_type is MediaType.GIF:
-            return self.optimize_gif()
+            file_names = self.optimize_gif()
+
+            return file_names
 
         else:
             raise Exception("Called optimize on media that cannot be optimized")
@@ -162,14 +166,11 @@ class Media(Base):
         clip = mp.VideoFileClip(raw_gif_file_name)
 
         temp_poster_file_name = str(self.uuid) + ".poster.jpeg"
-        clip.save_frame(temp_poster_file_name, t=0)
-        poster = Image.open(temp_poster_file_name)
+        poster = Image.open(raw_gif_file_name)
+        poster.convert("RGB").save(temp_poster_file_name)
 
         self.set_average_color(poster)
-
-        self.width = clip.w
-        self.height = clip.h
-        self.aspect = round(self.width / self.height, 2)
+        self.set_static_info(poster)
 
         # Save optimized MP4 clip
         optimized_mp4_filename = MEDIA_NAME.format(
@@ -208,10 +209,7 @@ class Media(Base):
 
         return [gif_file_name, optimized_mp4_filename, poster_jpeg_file_name]
 
-    def optimize_static(self):
-        # Cast as PIL Image
-        image = Image.open(self.file)
-
+    def optimize_static(self, image):
         # Rotate based on EXIF data
         try:
             for orientation in ExifTags.TAGS.keys():
