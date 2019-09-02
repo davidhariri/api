@@ -15,12 +15,13 @@ class MediaEndpoint(Resource):
     Routes defined for uploading images to the CDN
     """
     @security(True)
-    def post(self, **kwargs):
+    def post(self, user, **kwargs):
         """Base endpoint"""
         file = request.files["file"]
 
         try:
             media = Media(file=file)
+            media.user_id = user.id
         except InvalidMediaTypeException as e:
             return {
                 "message": str(e)
@@ -41,8 +42,7 @@ class MediaEndpoint(Resource):
         media.showcase = request.args.get("showcase") is not None
 
         try:
-            db.session.add(media)
-            db.session.commit()
+            media.save()
         except Exception as e:
             capture_exception(e)
             return {

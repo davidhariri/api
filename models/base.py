@@ -58,3 +58,7 @@ class Base(db.Model):
 
 	def to_json(self, filters=[]):
 		return json.dumps(self.to_dict(filters=filters))
+	
+	def save(self):
+		db.session.add(self)
+		db.session.commit()

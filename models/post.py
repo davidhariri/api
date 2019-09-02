@@ -4,6 +4,7 @@ import random
 import datetime
 from sqlalchemy.dialects.postgresql import ARRAY
 from models.base import Base
+from models.user import User
 import os
 import requests
 
@@ -43,6 +44,7 @@ class Post(Base):
 	media = db.Column(ARRAY(db.String, dimensions=1))
 	topics = db.Column(ARRAY(db.String, dimensions=1))
 	tweet_id = db.Column(db.String)
+	user_id = db.Column(db.ForeignKey(User.id), nullable=False)
 
 	def _fetch_friendly_location(self):
 		GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", None)

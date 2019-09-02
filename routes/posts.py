@@ -106,11 +106,12 @@ class PostsEndpoint(Resource):
     """
     @security(True)
     @json_input(ALLOWED_FIELDS)
-    def post(self, authorized, fields):
+    def post(self, authorized, user, fields, **kwargs):
         """
         Endpoint for creating new Posts
         """
         post = Post(**fields)
+        post.user_id = user.id
 
         # Fetch location name if not present and valid lat lon exists
         if post.location_lon is not None and post.location_lat is not None and post.location_name is None:
@@ -141,7 +142,7 @@ class PostsEndpoint(Resource):
     @paginate()
     @_has_topics()
     @cached(namespace="post", expiry=60)
-    def get(self, authorized, limit, skip, topics):
+    def get(self, authorized, limit, skip, topics, **kwargs):
         """
         Endpoint for listing posts
         """
@@ -166,7 +167,7 @@ class PostEndpoint(Resource):
     @security()
     @_needs_post()
     @cached(namespace="post", expiry=60)
-    def get(self, post, authorized):
+    def get(self, post, authorized, **kwargs):
         """Retrieves a post by it's identifier"""
         return post.to_dict(), 200
 

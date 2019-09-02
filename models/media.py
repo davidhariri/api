@@ -2,6 +2,7 @@ from helpers.db import db
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from models.base import Base
+from models.user import User
 from enum import Enum
 from PIL import Image, ExifTags
 from colorthief import ColorThief
@@ -68,6 +69,7 @@ class Media(Base):
     camera_make = db.Column(db.String)
     camera_model = db.Column(db.String)
     average_color = db.Column(db.String)
+    user_id = db.Column(db.ForeignKey(User.id), nullable=False)
 
     def __init__(self, file):
         self.file = file
@@ -184,7 +186,6 @@ class Media(Base):
             optimized_mp4_filename,
             codec="libx264",
             bitrate="3000k",
-            progress_bar=False,
             verbose=False,
             ffmpeg_params=["-movflags", "faststart", "-pix_fmt", "yuv420p", "-vf", "scale=896:-2"])
 

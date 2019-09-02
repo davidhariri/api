@@ -25,6 +25,7 @@ colorthief = "*"
 moviepy = "*"
 sentry-sdk = "*"
 blinker = "*"
+google-auth = "*"
 
 [dev-packages]
 pylint = "*"
