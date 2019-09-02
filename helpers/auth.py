@@ -107,6 +107,7 @@ def security(strict=False):
                 if matched_token is not None:
                     # Find the User that matches the token
                     kwargs["authorized"] = True
+                    kwargs["token"] = matched_token
                     kwargs["user"] = _find_user(matched_token.user_id)
                 
                 else:

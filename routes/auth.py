@@ -8,6 +8,9 @@ class AuthEndpoint(Resource):
     """
     @security(True)
     def get(self, **kwargs):
-        """Base endpoint"""
-        print(kwargs["user"])
-        return {"message": "Hello World"}, 200
+        """Base auth test endpoint"""
+        # If you get this far in endpoints that have @security(True)
+        # Then a Token and a User exist in the kwargs
+        return {
+            "user": kwargs["user"].to_dict()
+        }, 200

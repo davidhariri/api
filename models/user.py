@@ -17,9 +17,5 @@ class User(Base):
     family_name = db.String()
     google_id = db.String()
 
-    def __init__(self, name=None, email=None):
-        self.name = name
-        self.email = email
-
     def __repr__(self):
-        return '<User %r>' % (self.id)
+        return "<User {}>".format(self.id)
