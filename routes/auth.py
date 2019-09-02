@@ -9,4 +9,5 @@ class AuthEndpoint(Resource):
     @security(True)
     def get(self, **kwargs):
         """Base endpoint"""
+        print(kwargs["user"])
         return {"message": "Hello World"}, 200

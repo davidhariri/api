@@ -2,6 +2,7 @@ from flask import request
 import uuid
 import hashlib
 from models.token import AuthToken
+from models.user import User
 from helpers.cache import (
     cached,
     cache
@@ -50,6 +51,14 @@ def fingerprint(strict=False, expiry=(60 * 60), namespace="dhariri"):
         return wrapper
     return decorator
 
+@cached(namespace="user")
+def _find_user(user_id):
+    """
+    Simple finder function for getting User objects and caching results
+    """
+    # TODO: What happens if the user is deleted, but the token is still used?
+    return User.query.get(user_id)
+
 
 @cached(namespace="token")
 def _find_token(token_str):
@@ -95,7 +104,15 @@ def security(strict=False):
                         "message": "Incorrect Authorization Token"
                     }, 403
 
-                kwargs["authorized"] = (matched_token is not None)
+                if matched_token is not None:
+                    # Find the User that matches the token
+                    kwargs["authorized"] = True
+                    kwargs["user"] = _find_user(matched_token.user_id)
+                
+                else:
+                    # No matched token, request is not authorized, but the caller may still do things
+                    kwargs["authorized"] = False
+
             else:
                 kwargs["authorized"] = False
 
