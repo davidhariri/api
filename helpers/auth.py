@@ -51,6 +51,7 @@ def fingerprint(strict=False, expiry=(60 * 60), namespace="ls-fingerprint"):
         return wrapper
     return decorator
 
+
 @cached(namespace="user")
 def _find_user(user_id):
     """
@@ -109,9 +110,10 @@ def security(strict=False):
                     kwargs["authorized"] = True
                     kwargs["token"] = matched_token
                     kwargs["user"] = _find_user(matched_token.user_id)
-                
+
                 else:
-                    # No matched token, request is not authorized, but the caller may still do things
+                    # No matched token, request is not authorized, but the
+                    # caller may still do things
                     kwargs["authorized"] = False
 
             else:
