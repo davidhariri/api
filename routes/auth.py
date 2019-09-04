@@ -7,6 +7,7 @@ from google.auth.transport import requests
 from sqlalchemy.exc import IntegrityError
 from models.user import User
 from models.token import AuthToken
+from models.site import Site
 import os
 
 def _retrieve_google_user(google_token):
@@ -66,6 +67,8 @@ class AuthEndpoint(Resource):
             google_id=g_user["sub"]
         )
 
+        is_new_user = True
+
         try:
             # Save the new user to the DB
             new_user.save()
@@ -74,17 +77,31 @@ class AuthEndpoint(Resource):
         except IntegrityError:
             # That user already exists, rollback
             db.session().rollback()
+            is_new_user = False
 
             # Find existing user
             existing_user = User.query.filter_by(email=new_user.email).first()
             user = existing_user
             pass
 
+        # Send back a new auth token
+        # TODO: Should we be invalidating old tokens here?
         new_token = AuthToken(user_id=user.id)
         new_token.save()
         token = new_token
 
-        return {
+        return_payload = {
             "user": user.to_dict(),
             "token": token.to_dict()
-        }, 200
+        }
+        status_code = 200
+
+        # TODO: This post method is doing too much and should be separated
+        # Create a user's first site
+        if is_new_user:
+            status_code = 201
+            new_site = Site(user_id=user.id)
+            new_site.set_first_handle(user.name)
+            return_payload["site"] = new_site.to_dict()
+
+        return return_payload, status_code
