@@ -52,7 +52,7 @@ def fingerprint(strict=False, expiry=(60 * 60), namespace="ls-fingerprint"):
     return decorator
 
 
-@cached(namespace="user")
+@cached(namespace="user", expiry=60)
 def _find_user(user_id):
     """
     Simple finder function for getting User objects and caching results
@@ -61,7 +61,7 @@ def _find_user(user_id):
     return User.query.get(user_id)
 
 
-@cached(namespace="token")
+@cached(namespace="token", expiry=60)
 def _find_token(token_str):
     """
     Simple finder function which allows for more specific caching

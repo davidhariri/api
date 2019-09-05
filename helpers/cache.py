@@ -7,6 +7,8 @@ import hashlib
 cache = StrictRedis.from_url(
     os.getenv("REDIS_URI", "redis://localhost:6379/0"))
 
+cache_override = False
+
 
 def cached(expiry=24 * 60 * 60, namespace=None, debug=False):
     """
@@ -16,6 +18,10 @@ def cached(expiry=24 * 60 * 60, namespace=None, debug=False):
     def decorator(function):
         @wraps(function)
         def func(*args, **kwargs):
+            # Skip caching when in development mode
+            if cache_override:
+                return function(*args, **kwargs)
+
             args_list = map(lambda k: (k, kwargs[k]), kwargs.keys())
             args_key = str(pickle.dumps(sorted(list(args_list))))
 
