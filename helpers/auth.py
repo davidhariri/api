@@ -3,7 +3,7 @@ import uuid
 import hashlib
 from models.token import AuthToken
 from models.user import User
-from helps.cache import cache
+from helpers.cache import cache
 
 # MARK - Constants
 

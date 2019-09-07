@@ -30,5 +30,13 @@ api = API(app)
 for route, resource in route_dict.items():
     api.add_resource(resource, route)
 
+
+@app.errorhandler(404)
+def route_not_found(e):
+    return {
+        "message": "That resource could not be found"
+    }, 404
+
+
 if __name__ == "__main__":
     app.run()
