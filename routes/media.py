@@ -7,7 +7,7 @@ from helpers.s3 import upload
 from helpers.auth import security
 import os
 
-CDN_URI = "https://static.dhariri.com/media/{}"
+CDN_URI = "https://static.little.site/media/{}"
 
 
 class MediaEndpoint(Resource):

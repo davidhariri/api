@@ -3,7 +3,7 @@ import twitter
 from sentry_sdk import capture_exception
 
 CHAR_LIMIT = 246
-URL_STR = "life.dhariri.com/posts/{}"
+URL_STR = "little.site/posts/{}"
 
 twitter_api = twitter.Api(consumer_key=os.getenv("TWITTER_KEY"),
 	consumer_secret=os.getenv("TWITTER_SECRET"),
