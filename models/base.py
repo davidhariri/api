@@ -37,7 +37,8 @@ class Base(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     date_created = db.Column(db.DateTime, default=db.func.now())
-    date_updated = db.Column(db.DateTime, default=db.func.now(), onupdate=db.func.now())
+    date_updated = db.Column(
+        db.DateTime, default=db.func.now(), onupdate=db.func.now())
 
     def to_dict(self, filters=[]):
         _d = {}
@@ -58,11 +59,11 @@ class Base(db.Model):
 
     def to_json(self, filters=[]):
         return json.dumps(self.to_dict(filters=filters))
-    
+
     def save(self):
         db.session.add(self)
         db.session.commit()
-    
+
     def delete(self):
         db.session.delete(self)
         db.session.commit()
