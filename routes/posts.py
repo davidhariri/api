@@ -32,6 +32,7 @@ VALID_ACTIONS = {"love"}
 
 # MARK - Private helpers
 
+
 def _needs_post():
     """
     Abstraction decorator for endpoints that need a post to be
@@ -86,6 +87,7 @@ def _has_topics():
 
 # MARK - Endpoint Resources
 
+
 ALLOWED_FIELDS = [
     "comment",
     "public",
@@ -101,73 +103,12 @@ ALLOWED_FIELDS = [
 ]
 
 
-class PostsEndpoint(Resource):
-    """
-    Routes defined for manipluating Post objects
-    """
-    @security(True)
-    @json_input(ALLOWED_FIELDS)
-    def post(self, authorized, user, fields, **kwargs):
-        """
-        Endpoint for creating new Posts
-        """
-        post = Post(**fields)
-        post.user_id = user.id
-
-        # Fetch location name if not present and valid lat lon exists
-        if post.location_lon is not None and post.location_lat is not None and post.location_name is None:
-            post._fetch_friendly_location()
-
-        # Save post
-        result = _save_post(post, 201)
-
-        # Check if the post was saved OK
-        if result[1] != 201:
-            return result
-
-        # Tweet if public post
-        if post.public:
-            try:
-                tweet = post_post_as_tweet(post)
-            except Exception as e:
-                return result
-
-            post.tweet_id = tweet.id_str
-
-            # Over-write result to new save of tweet_id
-            result = _save_post(post, 201)
-
-        return result
-
-    @security()
-    @paginate()
-    @_has_topics()
-    @cached(namespace="post", expiry=60)
-    def get(self, authorized, limit, skip, topics, **kwargs):
-        """
-        Endpoint for listing posts
-        """
-        query = {}
-
-        if not authorized:
-            query = {"public": True}
-
-        posts = Post.query.filter_by(**query).order_by(desc(Post.date_created)).offset(skip).limit(limit)
-
-        return {
-            "posts": list(
-                map(lambda p: p.to_dict(), posts)
-            )
-        }
-
-
 class PostEndpoint(Resource):
     """
     Route used for reading, updating, deleting a single post
     """
     @security()
     @_needs_post()
-    @cached(namespace="post", expiry=60)
     def get(self, post, authorized, **kwargs):
         """Retrieves a post by it's identifier"""
         return post.to_dict(), 200
@@ -178,6 +119,7 @@ class PostEndpoint(Resource):
         """
         Route for deleting a post
         """
+        # TODO: Check to ensure the user owns this post
         db.session.delete(post)
         db.session.commit()
 
@@ -185,20 +127,3 @@ class PostEndpoint(Resource):
             "message": MSG_DELETED.format(**post.to_dict())
         }, 200
 
-
-class PostActionsEndpoint(Resource):
-    """
-    Route to perform certain actions on an Post like read, like etc.
-    """
-    @fingerprint(True)
-    @_needs_post()
-    def put(self, post, action, **kwargs):
-        if action in VALID_ACTIONS:
-            if action == "love":
-                post.increment_love_count()
-        else:
-            return {
-                "message": MSG_INVALID_ACTION.format(action)
-            }, 400
-
-        return _save_post(post)
