@@ -69,11 +69,18 @@ class SitesEndpoint(Resource):
     @json_input(ALLOWED_SITE_FIELDS)
     def post(self, user, fields, **kwargs):
         """
-        Create a new Site
+        Create a new Site with a handle field
         """
+        h = fields["handle"]
+
+        if not isinstance(h, str) or len(h) == 0:
+            return {
+                "message": "handle must be a non-empty string"
+            }, 400
+
         new_site = Site(**fields)
         new_site.user_id = user.id
-        new_site.set_first_handle(fields["handle"])
+        new_site.set_first_handle(h)
 
         return new_site.to_dict(), 201
 
