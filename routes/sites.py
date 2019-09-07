@@ -50,7 +50,7 @@ class SitesEndpoint(Resource):
     /sites/
     https://www.notion.so/littlesite/Sites-86d257e0f5da49c49404a974af474acc#8f073b0558f046ce97be7349ec5609cb
     """
-    @security(True)
+    @security(strict=True)
     def post(self, user, **kwargs):
         """
         Create a new Site
@@ -63,7 +63,7 @@ class SitesSiteEndpoint(Resource):
     /sites/<site_handle>/
     https://www.notion.so/littlesite/Sites-86d257e0f5da49c49404a974af474acc#ce93d0b9347646928e14ae9ed0503cce
     """
-    @security(True)
+    @security(strict=True)
     @_needs_site(site_owner_only=True)
     def delete(self, **kwargs):
         """
@@ -72,82 +72,56 @@ class SitesSiteEndpoint(Resource):
         return {}, 200
 
 
+ALLOWED_POST_FIELDS = [
+    "comment",
+    "public",
+    "location_lat",
+    "location_lon",
+    "location_name",
+    "review",
+    "link_name",
+    "link_uri",
+    "media",
+    "topics"
+]
+
+
 class SitesSitePostsEndpoint(Resource):
     """
     /sites/<site_handle>/posts/
     https://www.notion.so/littlesite/Sites-86d257e0f5da49c49404a974af474acc#cf08deadb11444d59d5bd26cb8e911fb
     """
-    @security(True)
+    @security(strict=True)
     @_needs_site(site_owner_only=True)
-    def post(self, **kwargs):
+    @json_input(ALLOWED_POST_FIELDS)
+    def post(self, user, site, fields, **kwargs):
         """
         Add a Post to a Site
         """
-        return {}, 201
+        post = Post(**fields)
+        post.user_id = user.id
+        post.site_id = site.id
+        post.save()
+
+        return post.to_dict(), 201
     
     @security()
     @_needs_site()
-    def get(self, owns_site, **kwargs):
+    @paginate()
+    def get(self, site, owns_site, skip, limit, **kwargs):
         """
         List all public Posts for a Site
         If authenticated and it's your site, list all private Posts too
         """
-        return {}, 200
+        query = {"site_id": site.id}
 
+        if not owns_site:
+            query = {"public": True}
 
-# class SitesPostsEndpoint(Resource):
-#     """
-#     Routes defined for manipluating Post objects within a Site
-#     """
-#     @security(True)
-#     @json_input(ALLOWED_FIELDS)
-#     def post(self, authorized, user, fields, **kwargs):
-#         """
-#         Endpoint for creating new Posts on a Site
-#         """
-#         post = Post(**fields)
-#         post.user_id = user.id
+        posts = Post.query.filter_by(**query).order_by(desc(Post.date_created)).offset(skip).limit(limit)
 
-#         # Fetch location name if not present and valid lat lon exists
-#         if post.location_lon is not None and post.location_lat is not None and post.location_name is None:
-#             post._fetch_friendly_location()
-
-#         # Save post
-#         result = _save_post(post, 201)
-
-#         # Check if the post was saved OK
-#         if result[1] != 201:
-#             return result
-
-#         # Tweet if public post
-#         if post.public:
-#             try:
-#                 tweet = post_post_as_tweet(post)
-#             except Exception as e:
-#                 return result
-
-#             post.tweet_id = tweet.id_str
-
-#             # Over-write result to new save of tweet_id
-#             result = _save_post(post, 201)
-
-#         return result
-
-#     @security()
-#     @paginate()
-#     def get(self, authorized, limit, skip, topics, **kwargs):
-#         """
-#         Endpoint for listing posts for a given site
-#         """
-#         query = {}
-
-#         if not authorized:
-#             query = {"public": True, "site_id"}
-
-#         posts = Post.query.filter_by(**query).order_by(desc(Post.date_created)).offset(skip).limit(limit)
-
-#         return {
-#             "posts": list(
-#                 map(lambda p: p.to_dict(), posts)
-#             )
-#         }
+        return {
+            "posts": list(
+                map(lambda p: p.to_dict(), posts)
+            )
+        }, 200
