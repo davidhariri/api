@@ -39,6 +39,7 @@ def _needs_site(site_owner_only=False):
                 Site.handle == kwargs["site_handle"]).first()
             del kwargs["site_handle"]
 
+            # NOTE: This is a repeat of the logic in _needs_post()
             # Could we find a Site for that handle?
             if kwargs["site"] is None:
                 return {"message": "Could not find that site"}, 404

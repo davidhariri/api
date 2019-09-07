@@ -15,6 +15,7 @@ def _needs_post(post_owner_only=False):
             kwargs["post"] = Post.query.filter(
                 Post.slug == kwargs["post_slug"]).first()
 
+            # NOTE: This is a repeat of the logic in _needs_site()
             if kwargs["post"] is None:
                 return {"message": "That post could not be found"}, 404
 

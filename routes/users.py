@@ -1,13 +1,10 @@
-from helpers.db import db
 from flask_restful import Resource
-from flask import request
 
 from models.site import Site
 from helpers.auth import (
     security
 )
 from helpers.paging import paginate
-from helpers.cache import cached
 from sqlalchemy import desc
 
 MSG_ACCESS_DENIED = "Sorry, you can only list your own sites at this time"
@@ -19,7 +16,6 @@ class UsersSitesEndpoint(Resource):
     """
     @security(True)
     @paginate()
-    @cached(namespace="users", expiry=60)
     def get(self, user, user_id, limit, skip, **kwargs):
         """
         Endpoint for listing a User's Sites
@@ -33,7 +29,8 @@ class UsersSitesEndpoint(Resource):
                 "message": MSG_ACCESS_DENIED
             }, 401
 
-        sites = Site.query.filter_by(user_id=user_id).order_by(desc(Site.date_created)).offset(skip).limit(limit)
+        sites = Site.query.filter_by(user_id=user_id).order_by(
+            desc(Site.date_created)).offset(skip).limit(limit)
 
         return {
             "sites": list(
