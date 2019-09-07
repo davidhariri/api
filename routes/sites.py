@@ -23,6 +23,10 @@ ALLOWED_POST_FIELDS = [
     "topics"
 ]
 
+ALLOWED_SITE_FIELDS = [
+    "handle"
+]
+
 
 def _needs_site(site_owner_only=False):
     """
@@ -62,11 +66,16 @@ class SitesEndpoint(Resource):
     https://www.notion.so/littlesite/Sites-86d257e0f5da49c49404a974af474acc#8f073b0558f046ce97be7349ec5609cb
     """
     @security(strict=True)
-    def post(self, user, **kwargs):
+    @json_input(ALLOWED_SITE_FIELDS)
+    def post(self, user, fields, **kwargs):
         """
         Create a new Site
         """
-        return {}, 201
+        new_site = Site(**fields)
+        new_site.user_id = user.id
+        new_site.set_first_handle(fields["handle"])
+
+        return new_site.to_dict(), 201
 
 
 class SitesSiteEndpoint(Resource):

@@ -26,8 +26,8 @@ class Site(Base):
             # Find existing sites that begin with that handle
             # NOTE: This query can be optimized:
             #   https://gist.github.com/hest/8798884
-            existing_site_count = self.query.filter(
-                self.handle.startswith(self.handle)).count()
+            existing_site_count = Site.query.filter(
+                Site.handle.startswith(self.handle)).count()
 
             self.handle += "-{}".format(existing_site_count+1)
 
