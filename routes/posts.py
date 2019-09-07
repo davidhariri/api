@@ -39,9 +39,8 @@ class PostsPostEndpoint(Resource):
     """
     Route used for reading, updating, deleting a single post
     """
-    @security()
     @_needs_post()
-    def get(self, post, authorized, **kwargs):
+    def get(self, post, **kwargs):
         """Retrieves a post by it's identifier"""
         return post.to_dict(), 200
 
