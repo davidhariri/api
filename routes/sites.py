@@ -1,19 +1,28 @@
-from helpers.db import db
 from flask_restful import Resource
-from flask import request
-from helpers.cache import invalidate
 
 from models.post import Post
 from models.site import Site
 from helpers.auth import (
-    security,
-    fingerprint
+    security
 )
 from helpers.io import json_input
 from helpers.paging import paginate
-from helpers.twitter import post_post_as_tweet
-from helpers.cache import cached
 from sqlalchemy import desc
+
+
+ALLOWED_POST_FIELDS = [
+    "comment",
+    "public",
+    "location_lat",
+    "location_lon",
+    "location_name",
+    "review",
+    "link_name",
+    "link_uri",
+    "media",
+    "topics"
+]
+
 
 def _needs_site(site_owner_only=False):
     """
@@ -22,7 +31,8 @@ def _needs_site(site_owner_only=False):
     """
     def decorator(function):
         def wrapper(*args, **kwargs):
-            kwargs["site"] = Site.query.filter(Site.handle == kwargs["site_handle"]).first()
+            kwargs["site"] = Site.query.filter(
+                Site.handle == kwargs["site_handle"]).first()
             del kwargs["site_handle"]
 
             # Could we find a Site for that handle?
@@ -31,11 +41,12 @@ def _needs_site(site_owner_only=False):
 
             if "user" in kwargs and kwargs["user"]:
                 # We have a User, check if the Site belongs to them
-                kwargs["owns_site"] = kwargs["site"].user_id == kwargs["user"].id
+                kwargs["owns_site"] = (
+                    kwargs["site"].user_id == kwargs["user"].id)
             else:
                 # No User, no ownership
                 kwargs["owns_site"] = False
-            
+
             if site_owner_only:
                 if not kwargs["owns_site"]:
                     return {"message": "You don't own this site"}, 401
@@ -72,20 +83,6 @@ class SitesSiteEndpoint(Resource):
         return {}, 200
 
 
-ALLOWED_POST_FIELDS = [
-    "comment",
-    "public",
-    "location_lat",
-    "location_lon",
-    "location_name",
-    "review",
-    "link_name",
-    "link_uri",
-    "media",
-    "topics"
-]
-
-
 class SitesSitePostsEndpoint(Resource):
     """
     /sites/<site_handle>/posts/
@@ -104,7 +101,7 @@ class SitesSitePostsEndpoint(Resource):
         post.save()
 
         return post.to_dict(), 201
-    
+
     @security()
     @_needs_site()
     @paginate()
@@ -118,7 +115,8 @@ class SitesSitePostsEndpoint(Resource):
         if not owns_site:
             query = {"public": True}
 
-        posts = Post.query.filter_by(**query).order_by(desc(Post.date_created)).offset(skip).limit(limit)
+        posts = Post.query.filter_by(**query).order_by(
+            desc(Post.date_created)).offset(skip).limit(limit)
 
         return {
             "posts": list(
