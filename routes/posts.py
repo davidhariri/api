@@ -50,7 +50,7 @@ def _needs_post():
 
             return function(*args, **kwargs)
         return wrapper
-    return decorator  
+    return decorator
 
 
 def _save_post(post, success_code=200):
@@ -96,7 +96,8 @@ ALLOWED_FIELDS = [
     "link_name",
     "link_uri",
     "media",
-    "topics"
+    "topics",
+    "site_id"
 ]
 
 
