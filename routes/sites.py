@@ -92,11 +92,14 @@ class SitesSiteEndpoint(Resource):
     """
     @security(strict=True)
     @_needs_site(site_owner_only=True)
-    def delete(self, **kwargs):
+    def delete(self, site, **kwargs):
         """
         Delete a Site and all associated Posts
         """
-        return {}, 200
+        site_handle = site.handle
+        site.delete()
+
+        return {"message": "Site '{}' deleted".format(site_handle)}, 200
 
 
 class SitesSitePostsEndpoint(Resource):
